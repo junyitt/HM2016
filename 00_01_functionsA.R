@@ -1,12 +1,20 @@
 
-#FUNCTIONS to calculate S0, exS0, Pro, Tfee, Netpro
+
 ##SECTION A
       source("C:/Users/User/Google Drive/r_Rfunction/_myCode.R")
       
-      wd_metaunderlyingprice <- "C:/Users/User/Google Drive/z_ALLHM/v5.0_7_Instruments"
-      
+#load the meta data into df
+      wdA <- getwd()
+            wd_metaunderlyingprice <- "C:/Users/User/Google Drive/z_ALLHM/v5.0_7_Instruments"
+            setwd(wd_metaunderlyingprice)
+                  dfmetaunderprice <- as.data.frame(read_excel("meta-underlyingprice.xlsx"))
+                  dfmetafic <- read.csv("meta-FIC-A.csv")
+                  dfmetabonde <- read.csv("meta-bond-e-B.csv")
+      setwd(wdA)
+
+#FUNCTIONS to calculate S0, exS0, Pro, Tfee, Netpro
       cff_f <- function(cType, pos1){
-            buy_sell <- c("AFUT")
+            sell_buy <- c("AFUT")
             lend_borrow <- c("Loan")
             long_short <- c("Forward", "Forward-S", "Bond", "Call Option", "Put Option", "Bond-E", "Call Option-E", "Put Option-E", "Call Option-S", "Put Option-S")
             na_cost <- c("Production")
@@ -15,7 +23,7 @@
             savings_na <- c("Cost Reduction")
       
             if(cType %in% buy_sell){
-                  if(pos1 == "Buy"){1}else{-1}
+                  if(pos1 == "Sell"){1}else{-1}
             }else if(cType %in% lend_borrow){
                   if(pos1 == "Lend"){1}else{-1}
             }else if(cType %in% long_short){
@@ -35,57 +43,58 @@
       }
       
       S0f <- function(Underlying, tDate){
-            A <- getwd()
-            #setwd to the location of meta-underlyingprice
-            setwd(wd_metaunderlyingprice)
-                 pricedf <- as.data.frame(read_excel("meta-underlyingprice.xlsx"))
-                 if(Underlying %in% colnames(pricedf)){
-                        s0 <- pricedf[tDate+1, Underlying]
+                 if(Underlying %in% colnames(dfmetaunderprice)){
+                        s0 <- dfmetaunderprice[tDate+1, Underlying]
                  }else{
                        s0 <- NA
                  }  
-            setwd(A)
-            s0
-      } #require meta
+                  s0
+      } #dfmetaunderprice
       
       exS0f <- function(Currency, tDate){
-            A <- getwd()
-            #setwd to the location of meta-underlyingprice
-            setwd(wd_metaunderlyingprice)
-            pricedf <- as.data.frame(read_excel("meta-underlyingprice.xlsx"))
-            if(Underlying %in% colnames(pricedf)){
-                  exs0 <- pricedf[tDate+1, Underlying]
+            if(Underlying %in% colnames(dfmetaunderprice)){
+                  exs0 <- dfmetaunderprice[tDate+1, Underlying]
             }else{
                   exs0 <- 1
             }  
-            setwd(A)
             exs0
-      } #require meta
+      } #dfmetunderprice
       
       #idea - include meta, inside prof, if(is.na(FIC){nonFIC procedure, elseif(FIC){meta FIC procedure})
       
-      Prof <- function(cType, cff, Units, S0, exS0){
-            zeropro <- c("Production", "AFUT", "Forward", "Forward-S", "Cost Reduction")
+      Prof <- function(FIC, cType, cff, Units, S0, exS0){
+            zeropro <- c("Revenue Increment", "Production", "AFUT", "Forward", "Forward-S", "Cost Reduction", "Cash")
             #Method 1: -1*cff*Units*S0*exS0 
             m1 <- c("Call Option", "Put Option", "Bond")
             ##Method 2: -1*cff*Units*exS0 
-            m2 <- c("Cash", "Employ Service", "Loan")
-            if(cType %in% zeropro){0}
+            m2 <- c("Employ Service", "Loan")
+            ##Method 3: meta
+                  #m3 <- c("Call Option-S", "Put Option-S", "Bond-E", "Call Option-E", "Put Option-E")
+                  #or FIC not NA
+            if(!is.na(FIC)){
+                  #meta procedure, m3
+                  cc <- dfmetafic[,"FIC"] == FIC
+                  -1*cff*Units*dfmetafic[cc, "Proceed"]
+            }else if(cType %in% zeropro){0}
             else if(cType %in% m1){-1*cff*Units*S0*exS0}
             else if(cType %in% m2){-1*cff*Units*exS0}
             else{NA}
-      }
+      } #dfmetafic
       
-      Tfeef <- function(cType, Units, Pro, S0, exS0){
-            #m1: 2% of proceed, units*pro*exS0
-                  m1 <- c("Call Option", "Put Option")
-            #m2: 2% of notional value, units*S0*exS0
+      Tfeef <- function(FIC, cType, Units, Pro, S0, exS0){
+            #m1: 2% of notional value, units*S0*exS0
                   m2 <- c("Forward")
-            #m3: else 0
-                  if(cType %in% m1){} #Units*Pro*exS0*0.03 (meta)
-                  else if(cType %in% m2){Units*S0*exS0*0.02}
-                  else{0}
-      }
+            #m3: meta
+                  #FIC not NA
+            #m4: else 0
+                  if(!is.na(FIC)){
+                        abs(Units*dfmetafic[,"Tfee"])
+                  }else if(cType %in% m2){
+                        abs(Units*S0*exS0*0.02)
+                  }else{
+                        0
+                  }
+      } #dfmetafic
             
       Netprof <- function(Pro, Tfee){
                   Pro - abs(Tfee)
@@ -94,39 +103,114 @@
       
 #SECTION B
       STf <- function(Underlying, td){
-            A <- getwd()
-            #setwd to the location of meta-underlyingprice
-            setwd(wd_metaunderlyingprice)
-            pricedf <- as.data.frame(read_excel("meta-underlyingprice.xlsx"))
-            if(Underlying %in% colnames(pricedf)){
-                  ST <- pricedf[td+1, Underlying]
+            if(Underlying %in% colnames(dfmetaunderprice)){
+                  ST <- dfmetaunderprice[td+1, Underlying]
             }else{
                   ST <- NA
             }  
-            setwd(A)
             ST
-      } #meta
+      } #dfmetaunderprice
       
       exSTf <- function(Currency, td){
-            A <- getwd()
-            #setwd to the location of meta-underlyingprice
-            setwd(wd_metaunderlyingprice)
-            pricedf <- as.data.frame(read_excel("meta-underlyingprice.xlsx"))
-            if(Underlying %in% colnames(pricedf)){
-                  exST <- pricedf[td+1, Underlying]
+            if(Underlying %in% colnames(dfmetaunderprice)){
+                  exST <- dfmetaunderprice[td+1, Underlying]
             }else{
                   exST <- 1
             }  
-            setwd(A)
             exST  
-      } #meta
+      } #dfmetaunderprice
       
-      ProTf <- function(FIC, cType, cff, Units, ST, exST){
+      ProTf <- function(FIC, cType, cff, Units, Pro, kPrice, tDate, mDate, ST, exST, yy){
+            m1 <- c("Employ Service") #zero proT because count on pro0
+            m2 <- c("Cash") #opposite of employ service, count on end of year proT
+            m3 <- c("AFUT")
+            m4 <- c("Forward", "Forward-S")
+            m5 <- c("Revenue Increment", "Cost Reduction", "Production", "Bond")
+            m6 <- c("Put Option", "Put Option-S", "Put Option-E")
+            m7 <- c("Call Option", "Call Option-S", "Call Option-E")
+            m8 <- c("Loan")
+            m9 <- c("Bond-E")
             
-      }
+            if(cType %in% m1){
+                  0
+            }else if(cType %in% m2){
+                  -1*cff*Units     
+            }else if(cType %in% m3){
+                  cff*Units*exST*ST     
+            }else if(cType %in% m4){
+                  cff*Units*exST*(ST-kPrice)     
+            }else if(cType %in% m5){
+                  cff*Units*exST*kPrice     
+            }else if(cType %in% m6){
+                  cff*Units*exST*max(kPrice-ST, 0)     
+            }else if(cType %in% m7){
+                  cff*Units*exST*max(ST-kPrice,0)
+            }else if(cType %in% m8){
+                  #loan
+                  r1 <- kPrice
+                  n1 <- mDate - tDate
+                  loanamt <- abs(Units)
+                  pay1 <- loanamt*r1/(1-(1+r1)^(-1*n1)) #payment per year in foreign currency
+                  if(tDate < yy & mDate <= yy){
+                        cff*pay1*exST
+                  }else{
+                        0
+                  }
+            }else if(cType %in% m9){
+                  #meta
+                  uu <- dfmetabonde[,"FIC"] == FIC
+                  if(yy == 3){
+                        0
+                  }else if(yy == 4){
+                        cff*units*dfmetabonde[uu, "Pro4"]*exST
+                  }else if(yy == 5){exST
+                        cff*units*dfmetabonde[uu, "Pro5"]*exST
+                  }else{exST
+                        0
+                  }
+            }
+      } #dfmetabonde
       
-      MVTf <- function(FIC, cType, cff, Units, ST, exST){
+      MVTf <- function(FIC, cType, cff, Units, Pro, kPrice, tDate, mDate, ST, exST, yy){
+            zeromv <- c("Revenue Increment", "AFUT", "Cost Reduction", "Forward", "Forward-S","Production", "Cash", "Employ Service")
+            tdatemv <- c("Call Option", "Put Option", "Call Option-S", "Put Option-S", "Call Option-E", "Put Option-E", "Bond")
+            loanmv <- c("Loan")
+            bondmeta <- c("Bond-E")
             
-      }
+            if(cType %in% zeromv){
+                  0
+            }else if(cType %in% tdatemv){
+                  if(tDate == yy){
+                        cff*abs(Pro)
+                  }else{0}
+            }else if(cType %in% loanmv){
+                  r1 <- kPrice
+                  n1 <- mDate - tDate
+                  loanamt <- abs(Units)
+                  pay1 <- loanamt*r1/(1-(1+r1)^(-1*n1)) #payment per year in foreign currency
+                        n2 <- yy-tDate
+                        if(n2 >= 0){
+                              mvex <- pay1*(1-(1+r1)^(-1*n2))/(r1) #mv in foreign currency
+                              cff*exST*mvex #pro >(-cff) is opposite of mv -> cff
+                        }else{
+                              0
+                        }
+            }else if(cType %in% bondmeta){
+                  uu <- dfmetabonde[,"FIC"] == FIC
+                  if(yy == 3){
+                        cff*units*dfmetabonde[uu, "Proceed"]*exST
+                  }else if(yy == 4){
+                        cff*units*dfmetabonde[uu, "MV4"]*exST
+                  }else if(yy == 5){exST
+                        cff*units*dfmetabonde[uu, "MV5"]*exST
+                  }else{exST
+                        0
+                  }
+            }else{
+                  NA
+            }
+            
+            
+      } #dfmetabonde
             
       
