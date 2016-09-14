@@ -12,7 +12,7 @@
                   dfmetabonde <- read.csv("meta-bond-e-B.csv")
       setwd(wdA)
 
-#FUNCTIONS to calculate S0, exS0, Pro, Tfee, Netpro
+#SECTION A: FUNCTIONS to calculate S0, exS0, Pro, Tfee, Netpro
       cff_f <- function(cType, pos1){
             sell_buy <- c("AFUT")
             lend_borrow <- c("Loan")
@@ -58,9 +58,7 @@
                   exs0 <- 1
             }  
             exs0
-      } #dfmetunderprice
-      
-      #idea - include meta, inside prof, if(is.na(FIC){nonFIC procedure, elseif(FIC){meta FIC procedure})
+      } #dfmetunderprice)
       
       Prof <- function(FIC, cType, cff, Units, S0, exS0){
             zeropro <- c("Revenue Increment", "Production", "AFUT", "Forward", "Forward-S", "Cost Reduction", "Cash")
@@ -130,21 +128,22 @@
             m7 <- c("Call Option", "Call Option-S", "Call Option-E")
             m8 <- c("Loan")
             m9 <- c("Bond-E")
+                  mm <- mDate == yy #criteria
             
             if(cType %in% m1){
                   0
             }else if(cType %in% m2){
-                  -1*cff*Units     
+                  if(mm){-1*cff*Units}else{0}
             }else if(cType %in% m3){
-                  cff*Units*exST*ST     
+                  if(mm){cff*Units*exST*ST}else{0}
             }else if(cType %in% m4){
-                  cff*Units*exST*(ST-kPrice)     
+                  if(mm){cff*Units*exST*(ST-kPrice)}else{0}
             }else if(cType %in% m5){
-                  cff*Units*exST*kPrice     
+                  if(mm){cff*Units*exST*kPrice}else{0}
             }else if(cType %in% m6){
-                  cff*Units*exST*max(kPrice-ST, 0)     
+                  if(mm){cff*Units*exST*max(kPrice-ST, 0)}else{0}
             }else if(cType %in% m7){
-                  cff*Units*exST*max(ST-kPrice,0)
+                  if(mm){cff*Units*exST*max(ST-kPrice,0)}else{0}
             }else if(cType %in% m8){
                   #loan
                   r1 <- kPrice
