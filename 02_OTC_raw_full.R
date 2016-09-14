@@ -20,3 +20,6 @@ OTCrawdf <- read.csv(paste0("OTC_", yy, ".csv"))
       dupotcrawdf <- duplicate_f(OTCrawdf)
             #final full-tran-OTC df
             OTCfulltrandf <- OTCfullconv_f(dupotcrawdf)
+            OTCfulltrandf <- subcutdf_f(OTCfulltrandf)            
+                  #add track no
+                  OTCfulltrandf[,"TrackNo"] <- trackno_f(OTCfulltrandf)

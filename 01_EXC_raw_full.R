@@ -27,8 +27,9 @@ EXCrawdf <- read.csv(paste0("EXC_", yy, ".csv"))
             
       #write a function that convert EXCrawdf to full tran #with error handler
       EXCfulltrandf <- EXCfullconv_f(EXCrawdf, excficmetadf, tkeydf)
-      
-      
+      EXCfulltrandf <- subcutdf_f(EXCfulltrandf)
+            #add track no
+            EXCfulltrandf[,"TrackNo"] <- trackno_f(EXCfulltrandf)
 
 
      

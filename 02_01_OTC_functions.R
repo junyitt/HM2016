@@ -132,7 +132,7 @@ duplicate_f <- function(rawdf){
 ##CONV-TO-FULL-TRAN-DF: Main: CONVf
 OTCfullconv_f <- function(dupdf){
       #FULL-TRAN required variables list
-      fullvar1 <- c("classf", "FIC", "rClass", "sClass", "TeamName", "cParty", 
+      fullvar1 <- c("TrackNo", "classf", "FIC", "rClass", "sClass", "TeamName", "cParty", 
                     "cType", "Underlying", "Currency", "kPrice", 
                     "pos1", "Units", "tDate", "mDate", "tKey", "Remarks",
                     "VL", "VLRemarks")
@@ -145,6 +145,7 @@ OTCfullconv_f <- function(dupdf){
                           "mDate", "Remarks")
       
       #EACH VARIABLES - treatment
+      TrackNo <- rep(1, N)
       classf <- rep("OTC", N)
       FIC <- rep(NA, N)
       rClass <- rep(NA, N) #######TO BE DETERMINED #####!!!!!!!!!!!!
@@ -171,4 +172,34 @@ OTCfullconv_f <- function(dupdf){
             VL, VLRemarks)
 }
 
+#CUTOFF function: Cutoff at the n-1 transactions, where the nth transaction' remarks = "cutoffapril"
+subcutdf_f <- function(excfulldf){
+      rem1 <- excfulldf[, "Remarks"]
+      rem2 <- gsub(tolower(rem1), pattern = "[[:space:]]", replacement = "")
+      if("cutoffapril" %in% aa){
+            nx <- grep("cutoffapril", rem2)
+            excfulldf[1:(nx-1),]
+      }else{
+            excfulldf
+      }
+}
 
+#TRACKNO function
+trackno_f <- function(fulltrandf, classf = "EXC"){
+      trackv <- rep(1, nrow(fulltrandf))
+      yearuni <- unique(fulltrandf[,"tDate"])
+      classfuni <- unique(fulltrandf[,"classf"])
+            for(yrr in yearuni){
+                  for(clf in classfuni){
+                        Y <- fulltrandf[,"tDate"] == yrr; Z <- fulltrandf[,"classf"] == clf
+                        nt <- length(trackv[Y & Z])
+                              start <- yrr+100; mid <- substr(clf, 1,3)
+                        trackv[Y & Z] <- sapply(1:nt, FUN = function(j){
+                                                paste0(start, mid, (1000+j))      
+                                          })
+                  }
+            }
+            #output: track number vector
+            trackv
+      
+}

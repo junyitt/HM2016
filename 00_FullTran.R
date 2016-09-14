@@ -1,12 +1,14 @@
 #Done: Section A, as of 20160913
 #Next: Section B: evaluate settlement at time T 
+#DIR
+      fulltrandir <- "C:/Users/User/Google Drive/z_ALLHM"
 
 #step 0: source functions
 source("C:/Users/User/Google Drive/z_ALLHM/00_01_functionsA.R")
 
 #first assign the full transactions.csv to df
-      #setwd("fulltran location")
-      #df <- as.data.frame(read_excel("fulltransaction.csv"))
+      setwd(fulltrandir)
+      df <- as.data.frame(read_excel("fulltransaction.csv"))
 
 #assign values to the variable name, e.g. Underlying <- df[,"Underlying"]
 colName <- colnames(df)
