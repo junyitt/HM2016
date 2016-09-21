@@ -32,11 +32,11 @@ EXCfullconv_f <- function(excdf, excficmetadf, tkeydf){
                   mDate <- sapply(X = FIC, FUN = function(x){exc_valf(x, excficmetadf, "mDate")})    #meta
                   tKey <- substr(excdf[,"tKey"], 4, 7)
                   Remarks <- excdf[,"Remarks"]
-                        VL <-  sapply(X=1:N, function(j){VLf(TeamName[j], tKey[j], tkeydf, cType[i], pos1[i])}) 
+                        VL <-  sapply(X=1:N, function(j){VLf(TeamName[j], excdf[j,"tKey"], tkeydf, cType[j], pos1[j])}) 
                         VLRemarks <- sapply(X=1:N, function(j){VLRf(VL[j])}) 
       
       #output fulldf
-      cbind(classf, FIC, rClass, sClass, TeamName, cParty, 
+      data.frame(TrackNo, classf, FIC, rClass, sClass, TeamName, cParty, 
             cType, Underlying, Currency, kPrice, 
             pos1, Units, tDate, mDate, tKey, Remarks,
             VL, VLRemarks)
@@ -46,7 +46,7 @@ EXCfullconv_f <- function(excdf, excficmetadf, tkeydf){
 subcutdf_f <- function(excfulldf){
       rem1 <- excfulldf[, "Remarks"]
       rem2 <- gsub(tolower(rem1), pattern = "[[:space:]]", replacement = "")
-      if("cutoffapril" %in% aa){
+      if("cutoffapril" %in% rem1){
             nx <- grep("cutoffapril", rem2)
             excfulldf[1:(nx-1),]
       }else{
@@ -63,11 +63,11 @@ exc_valf <- function(FIC, metadf, vname){
 
 #check validitiy (EXC)
 VLf <- function(tName, tKey, tKeydf, cType, pos1){
-      teamname1 <- tKeydf[, "Team Name"]
+      teamname1 <- tKeydf[, "TeamName"]
       teamname1 <- gsub(tolower(teamname1), pattern = "[[:space:]]", replacement = "")     
       tname2 <- gsub(tolower(tName), pattern = "[[:space:]]", replacement = "") 
             uu <- teamname1 == tname2
-            tkey1 <- tKeydf[uu, "Trading Key"]
+            tkey1 <- tKeydf[uu, "tKey"]
             #invalid if wrong trading key
             if(!(tKey == tkey1)){
                   0
@@ -84,10 +84,10 @@ VLRf <- function(vl){
       if(vl==1){"OK"}else{"Invalid Trading Key or Short Bond"}
 }
 
-#TRACKNO function
+#general: TRACKNO function
 trackno_f <- function(fulltrandf){
       trackv <- rep(1, nrow(fulltrandf))
-      yearuni <- unique(fulltrandf[,"tDate"])
+      yearuni <- as.integer(unique(fulltrandf[,"tDate"]))
       classfuni <- unique(fulltrandf[,"classf"])
       for(yrr in yearuni){
             for(clf in classfuni){

@@ -1,5 +1,9 @@
 #Done: Section A, as of 20160913
 #Next: Section B: evaluate settlement at time T 
+
+
+
+
 #DIR
       fulltrandir <- "C:/Users/User/Google Drive/z_ALLHM"
 
@@ -18,7 +22,11 @@ for(i in 1:length(colName)){assign(colName[i], value = df[, colName[i]])}
       newvar <- c("S0", "exS0", "Pro", "Tfee", "NetPro")
       for(i in 1:length(newvar)){assign(newvar[i], value = vector())}
 
-#SECTION A: S0, exS0, Pro, Tfee, NetPro
+      
+############################
+      # 6_1BGNcalc
+###########################
+#S0, exS0, Pro, Tfee, NetPro
 N <- nrow(df)
 cff <- vector()
       for(i in 1:N){
@@ -34,6 +42,26 @@ cff <- vector()
       #final s0 df:
       df0 <- cbind(df, S0, exS0, Pro, Tfee, NetPro)
       View(df0)
+
+      
+      ############################
+      # 7_BGNstloan
+      ###########################   
+      
+      #to be continued  #need to do team classfication here?
+      
+############################
+# 8_2BGNcalc
+###########################
+
+      #to be continued
+      
+      
+############################
+      # 9_ENDcalc
+###########################
+
+      
       
 #create empty vector for the target variable to be calculated
       newvar <- c("ST", "exST", "ProT", "MVT")
@@ -51,7 +79,10 @@ cff <- vector()
       dfT <- cbind(df0, ST, exST, ProT, MVT)
       View(dfT)
       
-      
+
+############################
+# A1_Report
+###########################   
       
       
 

@@ -12,10 +12,10 @@ duplicate_f <- function(rawdf){
       rawdf2[,"Team1"] <- rawdf[, "Team2"]  #flip team 1 and team 2 
       rawdf2[,"Team2"] <- rawdf[, "Team1"]
       rawdf2[,"posTeam1"] <- sapply(rawdf[,"posTeam1"], FUN = function(j){flippos_f(j)})
+      rawdf0 <- rbind(rawdf, rawdf2)
             #FIX
-            rawdf0 <- rbind(rawdf, rawdf2)
             rawdf0[, "Units"] <- round(rawdf0[, "Units"],0) #round
-            rawdf0[,"posTeam1"] <- sapply(rawdf0[,"posTeam1"], FUN = function(j){posfix_f(j)}) #fix position
+            rawdf0[,"posTeam1"] <- sapply(1:nrow(rawdf0), FUN = function(j){posfix_f(rawdf0[j,"cType"], rawdf0[j, "posTeam1"])}) #fix position
             rawdf0[,"Underlying"] <- sapply(1:nrow(rawdf0), FUN = function(j){loanNAfix_f(rawdf0[j,"cType"], rawdf0[j,"Underlying"])}) #fix underlying NA for loan
                   #output, duplicated and fixed df
                   rawdf0
@@ -35,27 +35,28 @@ duplicate_f <- function(rawdf){
       
 #DUPf: FIX Long and Short to Borrow and Lend for loan and forward
       posfix_f <- function(cType, pos){
-      p1 <- c("Long", "Short"); p2 <- c("Lend", "Borrow")
-      if(cType == "Forward"){
-            if(pos %in% p2){
-                  p1[pos == p2]
-            }             
-      }else if(cType == "Loan"){
-            if(pos %in% p1){
-                  p2[pos == p1]     
-            }     
+            p1 <- c("Long", "Short"); p2 <- c("Lend", "Borrow")
+            if(cType %in% "Forward"){
+                  if(pos %in% p2){
+                        p1[pos == p2]
+                  }else{pos}             
+            }else if(cType %in% "Loan"){
+                  if(pos %in% p1){
+                        p2[pos == p1]     
+                  }else{pos}     
+            }else{pos}
       }
-}
 
 #DUPf: loanunderlying -> chg to NA
       loanNAfix_f <- function(cType, Underlying){
-      if(cType == "Loan"){
+      if(cType %in% "Loan"){
             NA
       }else{
             Underlying
       }
 }
       
+#############################################################################
 #CONVf: add currrency
       curr_f <- function(Underlying){
             if(Underlying %in% "GOL"){
@@ -66,9 +67,9 @@ duplicate_f <- function(rawdf){
       }
       
 #CONVf: VL      
-      VLOTCf <- function(cType, Underlying, kPrice, tDate, mDate){
+      VLOTCf <- function(cType, Underlying, kPrice, tDate, mDate, yy){
             #1) no underlying for Forward - ignore for loan
-            if(cType == "Forward" & !Underlying %in% c("GOL", "CRU", "PAL")){
+            if(cType == "Forward" & !Underlying %in% c("GOL", "CRU", "PAL", "USD", "EUR")){
                   0
                   #2) kPrice boundary
             }else if(cType == "Loan" & !(kPrice >= 0.01 & kPrice <= 0.15)){
@@ -86,6 +87,9 @@ duplicate_f <- function(rawdf){
                   #3) tDate, mDate boundary
             }else if(tDate >= mDate | !(tDate >= 0 & tDate <= 4) | !(mDate >= 1 & mDate <= 5)){
                   0
+                  #4) tDate not during yy
+            }else if(!(tDate == yy)){
+                  0
             }else{
                   1
             }
@@ -100,9 +104,9 @@ duplicate_f <- function(rawdf){
       }
 
 #CONVf: VLRemarks
-      VLROTCf <- function(cType, Underlying, kPrice, tDate, mDate){
-            p <- vector()
-            if(cType == "Forward" & !Underlying %in% c("GOL", "CRU", "PAL")){
+      VLROTCf <- function(cType, Underlying, kPrice, tDate, mDate, yy){
+            p <- vector(); p <- rep(F,4)
+            if(cType == "Forward" & !Underlying %in% c("GOL", "CRU", "PAL", "USD", "EUR")){
                   p[1] <- TRUE
                   
             }
@@ -125,7 +129,12 @@ duplicate_f <- function(rawdf){
                   p[3] <- TRUE
             }
             
-            emsg <- c("Invalid Underlying for Forward", "Invalid kPrice", "Invalid tDate/mDate")
+            if(!(tDate == yy)){
+                  p[4] <- TRUE
+            }
+            
+            
+            emsg <- c("Invalid Underlying for Forward", "Invalid kPrice", "Invalid tDate/mDate", "tDate <> currentyr")
             paste(emsg[p], sep="", collapse="--") 
       }
 
@@ -162,44 +171,32 @@ OTCfullconv_f <- function(dupdf){
                   mDate <- dupdf[, "mDate"]
                   tKey <- rep(NA, N)
                   Remarks <- dupdf[,"Remarks"]
-                        VL <-  sapply(X=1:N, function(j){VLOTCf(cTypep[j], Underlying[j], kPrice[j], tDate[j], mDate[j])}) 
-                        VLRemarks <- sapply(X=1:N, function(j){VLROTCf(cTypep[j], Underlying[j], kPrice[j], tDate[j], mDate[j])}) 
+                        VL <-  sapply(X=1:N, function(j){VLOTCf(cType[j], Underlying[j], kPrice[j], tDate[j], mDate[j],yy)}) 
+                        VLRemarks <- sapply(X=1:N, function(j){VLROTCf(cType[j], Underlying[j], kPrice[j], tDate[j], mDate[j],yy)}) 
       
       #output fulldf
-      cbind(classf, FIC, rClass, sClass, TeamName, cParty, 
+      data.frame(TrackNo, classf, FIC, rClass, sClass, TeamName, cParty, 
             cType, Underlying, Currency, kPrice, 
             pos1, Units, tDate, mDate, tKey, Remarks,
             VL, VLRemarks)
 }
 
-#CUTOFF function: Cutoff at the n-1 transactions, where the nth transaction' remarks = "cutoffapril"
-subcutdf_f <- function(excfulldf){
-      rem1 <- excfulldf[, "Remarks"]
-      rem2 <- gsub(tolower(rem1), pattern = "[[:space:]]", replacement = "")
-      if("cutoffapril" %in% aa){
-            nx <- grep("cutoffapril", rem2)
-            excfulldf[1:(nx-1),]
-      }else{
-            excfulldf
-      }
-}
-
-#TRACKNO function
-trackno_f <- function(fulltrandf, classf = "EXC"){
+#general, duplicate: TRACKNO function
+trackno_f <- function(fulltrandf){
       trackv <- rep(1, nrow(fulltrandf))
-      yearuni <- unique(fulltrandf[,"tDate"])
+      yearuni <- as.integer(unique(fulltrandf[,"tDate"]))
       classfuni <- unique(fulltrandf[,"classf"])
-            for(yrr in yearuni){
-                  for(clf in classfuni){
-                        Y <- fulltrandf[,"tDate"] == yrr; Z <- fulltrandf[,"classf"] == clf
-                        nt <- length(trackv[Y & Z])
-                              start <- yrr+100; mid <- substr(clf, 1,3)
-                        trackv[Y & Z] <- sapply(1:nt, FUN = function(j){
-                                                paste0(start, mid, (1000+j))      
-                                          })
-                  }
+      for(yrr in yearuni){
+            for(clf in classfuni){
+                  Y <- fulltrandf[,"tDate"] == yrr; Z <- fulltrandf[,"classf"] == clf
+                  nt <- length(trackv[Y & Z])
+                  start <- yrr+100; mid <- substr(clf, 1,3)
+                  trackv[Y & Z] <- sapply(1:nt, FUN = function(j){
+                        paste0(start, mid, (1000+j))      
+                  })
             }
-            #output: track number vector
-            trackv
+      }
+      #output: track number vector
+      trackv
       
 }

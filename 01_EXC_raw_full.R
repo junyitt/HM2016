@@ -1,3 +1,6 @@
+#!!!!!!!!! Fix: read.csv change to read_excel
+
+
 #DIR
 EXCrawdir <- "C:/Users/User/Google Drive/z_ALLHM/v5U_UserTranRaw/EXC"
 excficmetadir <- "C:/Users/User/Google Drive/z_ALLHM/v5.0_7_Instruments"
@@ -9,20 +12,21 @@ tkeymetadir <- "C:/Users/User/Google Drive/z_ALLHM/v5M_meta/"
 #####SECTION EXC-to-FULL-1#####
   
 #set yy
-yy <- 0
+# yy <- 0
+# yy <- 1  
       
 #RAW-EXC-TRAN
 setwd(EXCrawdir)
-EXCrawdf <- read.csv(paste0("EXC_", yy, ".csv"))
+EXCrawdf <- as.data.frame(read_excel(paste0("EXC_", yy, ".xlsx")))
 
       ##FIXED META
             #get excficmetadf
             setwd(excficmetadir)
-            exficmetadf <- read.csv("meta-FIC-EXC.csv")
+            excficmetadf <- as.data.frame(read_excel("meta-FIC-EXC.xlsx"))
       
             #get tkeydf from meta-tradingkey.csv
             setwd(tkeymetadir)
-            tkeydf <- read.csv("meta-tradingkey.csv")
+            tkeydf <- as.data.frame(read_excel("meta-tradingkey.xlsx"))
       ##END-FIXED META
             
       #write a function that convert EXCrawdf to full tran #with error handler

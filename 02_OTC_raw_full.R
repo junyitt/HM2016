@@ -2,24 +2,26 @@
 
 #DIR
 OTCrawdir <- "C:/Users/User/Google Drive/z_ALLHM/v5U_UserTranRaw/OTC"
-EXCfdir <- "C:/Users/User/Google Drive/z_ALLHM/"
-                  EXTRArawdir <- "C:/Users/User/Google Drive/z_ALLHM/v5U_UserTranRaw/EXTRA"
+OTCfdir <- "C:/Users/User/Google Drive/z_ALLHM/"
+
 #FUNCTION
-setwd(EXCfdir)
-source("01_EXC_raw_full.R")
+setwd(OTCfdir)
+source("02_01_OTC_functions.R")
 
 #####SECTION OTC-to-FULL-1#####
 
 #set yy
-yy <- 0
+# yy <- 0
+# yy <- 0
 
 #RAW-OTC-TRAN
 setwd(OTCrawdir)
-OTCrawdf <- read.csv(paste0("OTC_", yy, ".csv"))
+OTCrawdf <- as.data.frame(read_excel(paste0("OTC_", yy, ".xlsx")))
+
       #duplicate and fix df
       dupotcrawdf <- duplicate_f(OTCrawdf)
             #final full-tran-OTC df
             OTCfulltrandf <- OTCfullconv_f(dupotcrawdf)
-            OTCfulltrandf <- subcutdf_f(OTCfulltrandf)            
                   #add track no
                   OTCfulltrandf[,"TrackNo"] <- trackno_f(OTCfulltrandf)
+                  
