@@ -1,17 +1,20 @@
 source("C:/Users/User/Google Drive/r_Rfunction/_myCode.R")
 library(reshape2)
 
+#set year to "collect" data from, i.e. EXC_0 >> yy <- 0
+yy <- 0
+
+#Section 4 to 8 (fdf) 
+{
+      
 ############################
 # 4_ConvUser
 ############################
-
+{
 EXCraw2full.R_dir <- "C:/Users/User/Google Drive/z_ALLHM"
 OTCraw2full.R_dir <- "C:/Users/User/Google Drive/z_ALLHM"
 EXTRAraw2full.R_dir <- "C:/Users/User/Google Drive/z_ALLHM"
 
-#set year to "collect" data from, i.e. EXC_0 >> yy <- 0
-
-yy <- 0
 ##EXCHANGE
 setwd(EXCraw2full.R_dir); source("01_EXC_raw_full.R")
       #output: 
@@ -31,55 +34,117 @@ setwd(EXTRAraw2full.R_dir); source("03_EXTRA_raw_full.R")
 ###COMBINED########33333333333333
       ufullfdf <- rbind(EXCfulltrandf, OTCfulltrandf, extrafulltrandf)
       uspecfdf <- spectrandf
+} #output: ufullfdf, uspecfdf
+
       ############################
       # 4_ConvUser -- backup files, move files
       ############################
-      fulldf_csvdir <- "C:/Users/User/OneDrive/yy_YearlyFullTran"; b_fulldf_csvdir <- "C:/Users/User/OneDrive/yy_b_YearlyFullTran"
-      setwd(fulldf_csvdir); write.csv(ufullfdf, paste0("ufullfdf_", yy, ".csv"), row.names = F); write.csv(uspecfdf, paste0("uspecfdf_", yy, ".csv"), row.names = F)
-      setwd(b_fulldf_csvdir); write.csv(ufullfdf, paste0("b_ufullfdf_", yy, ".csv"), row.names = F); write.csv(uspecfdf, paste0("b_uspecfdf_", yy, ".csv"), row.names = F)
+      {
+            fulldf_csvdir <- "C:/Users/User/OneDrive/yy_YearlyFullTran"; b_fulldf_csvdir <- "C:/Users/User/OneDrive/yy_b_YearlyFullTran"
+            setwd(fulldf_csvdir); write.csv(ufullfdf, paste0("ufullfdf_", yy, ".csv"), row.names = F); write.csv(uspecfdf, paste0("uspecfdf_", yy, ".csv"), row.names = F)
+            setwd(b_fulldf_csvdir); write.csv(ufullfdf, paste0("b_ufullfdf_", yy, ".csv"), row.names = F); write.csv(uspecfdf, paste0("b_uspecfdf_", yy, ".csv"), row.names = F)
+      } 
       
+############################
+# 5_Routine
+############################
+{
+      routine5.dir <- ("C:/Users/User/Google Drive/z_ALLHM")
+      # yy <- 0    
+      #Routine add - core, scenario, and extra yr 0/1 full transactions
+      setwd(routine5.dir); source("50_RoutineAdd.R") #output: sfdf, cfdf, e0fdf
+      rfdf <- rbind(sfdf, cfdf, e0fdf)
+} #Output: Rfdf
       
       ############################
-      # 5_Routine
+      # 5_Routine -- backup files, move files
       ############################
-      
-      #refer to fulltran_(0 up to yy), and spectran(0 up to yy)
-      
-      ##ADD EXTRA
-      #rbind FDF <- fulltran 0 to yy, SPDF <- spectran 0 to yy, 
-            #add spectran 0 to yy related extra transactions of that year yy to full tran >>> refer meta >> FDF <- rbind(FDF, specconv2full)
-      
-      
-      #ADD core and scenario
-            #FDF <- rbind(FDF, COREfull, SCENARIOfull)
-      
-      #output: sfdf, cfdf, e0fdf
-      
+      {
+            rfdf_csvdir <- "C:/Users/User/OneDrive/yy_YearlyFullTran"; b_rfdf_csvdir <- "C:/Users/User/OneDrive/yy_b_YearlyFullTran"
+            setwd(rfdf_csvdir); write.csv(rfdf, paste0("rfullfdf_", yy, ".csv"), row.names = F) 
+            setwd(b_rfdf_csvdir); write.csv(rfdf, paste0("b_rfullfdf_", yy, ".csv"), row.names = F) #backup   
+      }
+
+      ##############################################
+            #5A: fdf_y - fulltrandf of the year yy
+      ##############################################
+      {
+            ufullfdf.c <- ufullfdf; rfdf.c <- rfdf
+                  ufullfdf.c[] <- lapply(ufullfdf, as.character)
+                  rfdf.c[] <- lapply(rfdf, as.character)
+                        fdf_y <- rbind(ufullfdf.c, rfdf.c)
+            
+            suppressWarnings({
+                  col <- c("kPrice", "Units", "tDate", "mDate")
+                  fdf_y[,col] <- sapply(col, FUN = function(j){as.numeric(fdf_y[,j])})
+                  
+            }) #as.numeric numeric columns
+      } #output: fdf_y
+
 ############################
 # 6_1BGNcalc
 ###########################
+{
+      #DIR
+      bgn6.dir <- "C:/Users/User/Google Drive/z_ALLHM"
+      
+      setwd(bgn6.dir)
+      source("60_BGN1.R") #output fdf with bgn columns - fdf_y6
+} #output: fdf_y6
 
-##copy paste from 00_FullTran.R  !!
-      
-      
-      ############################
-      # 7_BGNstloan
-      ###########################
-
-      
 ############################
-# 8_2BGNcalc
+# 7_BGNstloan & 8_2BGNcalc
 ###########################
+{
+      #DIR
+      bgn7.dir <- "C:/Users/User/Google Drive/z_ALLHM"
       
+      setwd(bgn7.dir)
+      source("70_BGNstloan.R") #output fdf_y7
+} #output: fdf_y7
+
+      ############################
+      # 7_BGN2 -- writecsv, backup files, move files
+      ############################
+      {
+            fdf_csvdir <- "C:/Users/User/OneDrive/yy_YearlyFullTran"; b_fdf_csvdir <- "C:/Users/User/OneDrive/yy_b_YearlyFullTran"
+            setwd(fdf_csvdir); write.csv(fdf_y7, paste0("zfdf_",yy,".csv"), row.names = F)
+            setwd(b_fdf_csvdir); write.csv(fdf_y7, paste0("b_zfdf_",yy,".csv"), row.names = F)
+      }     #"z_fdf_yy.csv"
+
+############################
+# 8_ENDcalc
+###########################
+{
+      #DIR
+      end8.dir <- "C:/Users/User/Google Drive/z_ALLHM"
       
+      setwd(end8.dir)
+      source("80_END1.R") #output fdf8_td
+} #output: fdf8_td
       
       ############################
-      # 9_ENDcalc
-      ###########################
+      # 8_ENDcalc -- writecsv, backup files, move files
+      ############################
+      {
+            fdftd_csvdir <- "C:/Users/User/OneDrive/yy_YearlyFullTran"; b_fdftd_csvdir <- "C:/Users/User/OneDrive/yy_b_YearlyFullTran"
+            setwd(fdftd_csvdir); write.csv(fdf8_td, paste0("fdf8_td_",yy,".csv"), row.names = F)
+            setwd(b_fdftd_csvdir); write.csv(fdf8_td, paste0("b_fdf8_td_",yy,".csv"), row.names = F)
+      }     #"fdf8_td_",yy,".csv"
       
+      
+} #fdf8_td
 
+
+#to be continued  #need to do team classfication here, mv classf
 ############################
 # A1_Report
 ###########################
-      
+
+#DIR-A1 
+A1.dir <- "C:/Users/User/Google Drive/z_ALLHM"
+
+setwd(A1.dir); source("A1_01_Core.R") #get 10 list for report? - aggregate them! >write.csv //rmarkdown      
+
+
       

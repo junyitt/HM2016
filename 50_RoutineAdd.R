@@ -1,5 +1,8 @@
 #50_RoutineAdd.R
 
+#DIR
+routinef_dir <- "C:/Users/User/Google Drive/z_ALLHM"
+
 #source function
 setwd(routinef_dir); source("50_01_RoutineFunctions.R")
 
@@ -10,7 +13,6 @@ setwd(routinef_dir); source("50_01_RoutineFunctions.R")
 
 #DIR
 metascenario_dir <- "C:/Users/User/Google Drive/z_ALLHM/v5M_FullTran_Core_Extra_Scenario"
-routinef_dir <- "C:/Users/User/Google Drive/z_ALLHM"
 
 #META-Scenario
       setwd(metascenario_dir)
@@ -52,10 +54,12 @@ meta.extra2 <- as.data.frame(read_excel("meta-extra-fulltran.xlsx", sheet = 2))[
 
 #SPEC-user (up till yy)
       setwd(metaspec); specxlsxfiles <- list.files(pattern = 'specfdf')
-      {speclist <- lapply(specxlsxfiles, FUN = function(f){
-            as.data.frame(read.csv(f))
-      })
-      specfdf2 <- do.call(rbind, speclist)} #out: specfdf2
+      {
+            speclist <- lapply(specxlsxfiles, FUN = function(f){
+                  as.data.frame(read.csv(f))
+            })
+            specfdf2 <- do.call(rbind, speclist)
+      } #out: specfdf2
 
 #yy <- 1
       e0fdf <- adde_ftran_f(specfdf2, meta.extra, yy)
