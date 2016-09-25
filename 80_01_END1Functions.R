@@ -1,9 +1,8 @@
 #80_01_END1Functions.R
 
 #main function: add end1 columns to bgndf
-fdf8_f <- function(fdftd, yy){
+fdf8_f <- function(df, yy){
       {
-            df <- fdftd
             #assign values to the variable name, e.g. Underlying <- df[,"Underlying"]
             colName <- colnames(df)
             for(i in 1:length(colName)){assign(colName[i], value = df[, colName[i]])}
@@ -11,6 +10,7 @@ fdf8_f <- function(fdftd, yy){
             #create empty vector for the target variable to be calculated
             newvar <- c("ST", "exST", "ProT", "MVT")
             for(i in 1:length(newvar)){assign(newvar[i], value = vector())}
+                  cff <- vector()
             
             N <- nrow(df)
       } #assign vector, empty vector
@@ -154,8 +154,8 @@ MVTf <- function(FIC, cType, cff, Units, Pro, kPrice, tDate, mDate, ST, exST, yy
             n1 <- mDate - tDate
             loanamt <- abs(Units)
             pay1 <- loanamt*r1/(1-(1+r1)^(-1*n1)) #payment per year in foreign currency
-            n2 <- yy-tDate
-            if(n2 >= 0){
+            n2 <- yy-tDate; n3 <- mDate - yy
+            if(n2 > 0 & n3 > 0){
                   mvex <- pay1*(1-(1+r1)^(-1*n2))/(r1) #mv in foreign currency
                   cff*exST*mvex #pro >(-cff) is opposite of mv -> cff
             }else{

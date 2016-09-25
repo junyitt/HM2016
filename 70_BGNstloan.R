@@ -16,12 +16,12 @@ balshy.dir <- "C:/Users/User/OneDrive/yy_YearlyBalanceSheet"
             balsh_y <- as.data.frame(read_excel("meta-balancesheet-0.xlsx"))
       }else{
             setwd(balshy.dir)
-            balsh_y <- read.csv(paste0("meta-balancesheet-", yy, ".xlsx"))
+            balsh_y <- read.csv(paste0("meta-balancesheet-", yy, ".csv"))
       }
       colnames(balsh_y) <- c("TeamName", "PPE", "FinAsset", "Cash", "ShareCap", "RE", "Loan", "NAV")
 }
 
-#find netcash for each time
+#find netcash for each team
 {
       team12v <- balsh_y[,"TeamName"]
       
