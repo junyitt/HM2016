@@ -1,5 +1,6 @@
 #A1_01_Core.R
-
+#<<<click below me: 3rd line hide all <<<
+{
 #DIR-f
 A1f.dir <- "C:/Users/User/Google Drive/z_ALLHM"
 
@@ -141,19 +142,18 @@ uReport_list <- lapply(teamname12, FUN = function(x){
       
 }  #balsh_new_yy2
 
+}  
+
+
 #A1 Report - 07 - Hedging Evaluation
 
 #DIR-80_01_END1Functions.R 
 e80f.dir <- "C:/Users/User/Google Drive/z_ALLHM"
 setwd(e80f.dir); source("80_01_END1Functions.R") #cff_f and ProTf, STf, exSTf
-#STf <- function(Underlying, td)
-#exSTf <- function(Currency, td)
-#ProTf <- function(FIC, cType, cff, Units, Pro, kPrice, tDate, mDate, ST, exST, yy)
-#cff_f <- function(cType, pos1)
 
-      
 {
 
+#$$###click
 {
       #teamnamelist > commlist > teamd      
 
@@ -179,6 +179,7 @@ setwd(e80f.dir); source("80_01_END1Functions.R") #cff_f and ProTf, STf, exSTf
       
 }   #optional: show what transactions are involved
       
+      # j <- "Alpha 1"; h <- "CRU"
       lapply(teamname12, FUN = function(j){
             {
                   v1 <-  c("GOL", "CRU", "PAL"); v2 <- c("USD", "EUR"); v3user <- c("OTC", "EXC"); v3hedge <- c("Scenario", "Extra")
@@ -193,7 +194,7 @@ setwd(e80f.dir); source("80_01_END1Functions.R") #cff_f and ProTf, STf, exSTf
             } #subset all commClass, by team: hdf, udf
             
             #return vector of scores BY 4class of commodities
-            sapply(commClass, FUN = function(h){
+            scorebycomm_v <- sapply(commClass, FUN = function(h){
                   
                   {
                         u1 <- hdf[,"Underlying"] %in% h; u2 <- hdf[,"Currency"] %in% h; u <- u1 | u2
@@ -214,19 +215,38 @@ setwd(e80f.dir); source("80_01_END1Functions.R") #cff_f and ProTf, STf, exSTf
                               ss0 <- STf(Underlying = h[1], yy); exss0 <- 1
                               gclass <- 3      
                         }
-                  }#ss0, exss0 #gClass 1 for golusd, 2 for eur, 3 for others
+                  }#ss0, exss0 #gclass 1 for golusd, 2 for eur, 3 for others
                               
                   step <- -30:30; step <- step/100 + 1
                   {      
                         
-                        
-                        sumpro <- sumprov.vary.f(h2df, step, yy, ss0, exss0, varyund = T)
-                        
+                        if(gclass == 3){ #CRU or #PAL
+                              
+                              P.und.h <- sumprov.vary.f(h2df, step, yy, ss0, exss0, varyund = T)
+                              P.und.t <- sumprov.vary.f(t2df, step, yy, ss0, exss0, varyund = T)
+                                    score <- scoreH.f(P.und.h, P.und.t, sumq = T)
+                                    
+                        }else if(gclass == 2){ #EUR
+                              P.cur.h <- sumprov.vary.f(h2df, step, yy, ss0, exss0, varyund = F)
+                              P.cur.t <- sumprov.vary.f(t2df, step, yy, ss0, exss0, varyund = F)
+                                    score <- scoreH.f(P.cur.h, P.cur.t, sumq = T)
+                              
+                        }else if(gclass == 1){ #GOL & USD
+                              P.und.h <- sumprov.vary.f(h2df, step, yy, ss0, exss0, varyund = T)
+                              P.und.t <- sumprov.vary.f(t2df, step, yy, ss0, exss0, varyund = T)
+                              score.und <- scoreH.f(P.und.h, P.und.t)
+                                    P.cur.h <- sumprov.vary.f(h2df, step, yy, ss0, exss0, varyund = F)
+                                    P.cur.t <- sumprov.vary.f(t2df, step, yy, ss0, exss0, varyund = F)
+                                    score.cur <- scoreH.f(P.cur.h, P.cur.t)
+                                          score <- mean(score.und, score.cur, sumq = T)
+                        }
                             ##refix:^^^^^^^
-                  }
+                  } #return score
                   
-            })
+                  score
+            }) #return list of scores, list by commoditiesclass
             
+            sum(scorebycomm_v)
       })
       
       
@@ -234,9 +254,9 @@ setwd(e80f.dir); source("80_01_END1Functions.R") #cff_f and ProTf, STf, exSTf
       
 }
 
-lapply(cReport_list, function(j){
-      j[1,]
-})
+# lapply(cReport_list, function(j){
+#       j[1,]
+# })
 #A1 Report - 08 - Extra Event Evaluation - Score
 #A1 Report - 09 - Cash Evaluation
 
