@@ -241,7 +241,7 @@
                   if(is.na(j)){
                         0
                   }else{
-                        maxs <- maxsharpe(rr, cv)
+                        maxs <- maxsharpe(rr, cv); maxsharpeR1 <<- maxs
                         dev <- abs((maxs - j)/maxs)
                         threshold <- c(0.01, 0.05, 0.10, 0.20, 0.50)
                         score <- c(20, 18, 15, 10, 5, 0)
@@ -283,7 +283,7 @@
                               tKey <- substr(edf[,"tKey"], 4, 7)
                               Remarks <- rem
                                     VL <-  rep(1,N)
-                                    VLRemarks <- scoren
+                                    VLRemarks <- scoren #; score.extra4 <<- scoren
       
                               #output fulldf
                               data.frame(TrackNo, classf, FIC, rClass, sClass, TeamName, cParty, 

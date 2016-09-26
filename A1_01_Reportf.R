@@ -128,7 +128,7 @@ userR.f <- function(tName, df){
 
 
 #A1 Report - 06 - Balance Sheet
-accTypef <- function(cType, cff){
+accTypef <- function(cType, cff, mv_ctype){
       if(cType %in% mv_ctype){
             if(cff == 1){
                   "FinAsset"
@@ -147,7 +147,57 @@ old2newbs.f <- function(balsh_y, acc1, pro0, proT){
       balsh_y
 } #return new balance sheet
 
-
+newbs.df.f <- function(balsh_y, fdf8_td , teamname12, fdf_y7){
+      #ALL cType 
+      allctype <- c("Employ Service", "Cash", "Revenue Increment", "Cost Reduction", "Production",
+                    "AFUT", "Forward", "Forward-S", "Bond", "Bond-E", "Loan",
+                    "Put Option", "Put Option-S", "Put Option-E", 
+                    "Call Option", "Call Option-S", "Call Option-E")
+      # zeromv <- c("Revenue Increment", "AFUT", "Cost Reduction", "Forward", "Forward-S","Production", "Cash", "Employ Service")
+      # tdatemv <- c("Call Option", "Put Option", "Call Option-S", "Put Option-S", "Call Option-E", "Put Option-E")
+      mv_ctype <- c("Bond", "Bond-E", "Loan")
+      
+      m.acc <- c("FinAsset", "Loan")
+      
+      
+      N <- nrow(fdf8_td); cff <- sapply(1:N, FUN = function(j){cff_f(fdf8_td[j, "cType"], fdf8_td[j, "pos1"])})
+      
+      accType <- sapply(1:N, FUN = function(j){
+            accTypef(fdf8_td[j,"cType"], cff[j], mv_ctype)    
+      })
+      acclist <- lapply(teamname12, FUN = function(j){
+            u <- fdf8_td[, "TeamName"] == j
+            sapply(m.acc, FUN = function(k){
+                  u2 <- accType == k
+                  abs(sum(fdf8_td[u & u2, "MVT"], na.rm =T))
+            })
+            
+            
+      })
+      acc1 <- do.call(rbind,acclist)
+      #find sum pro, proT for each team
+      {
+            #must use fdf_y7, NOT fdf_y6
+            pro0 <- sapply(teamname12, FUN = function(name){
+                  u <- fdf_y7[, "TeamName"] == name
+                  npro1 <- sum(fdf_y7[u, "NetPro"], na.rm = T)
+                  npro1
+            })
+            
+            #must use fdf8_td
+            proT <- sapply(teamname12, FUN = function(name){
+                  u <- fdf8_td[, "TeamName"] == name
+                  npro2 <- sum(fdf8_td[u, "ProT"], na.rm = T)
+                  npro2
+            })
+      } #pro0, proT
+      
+      balsh_new_yy2 <- old2newbs.f(balsh_y, acc1, pro0, proT) #return balance sheet for year yy2, each row representing each team
+      
+      
+}
+                       
+                       
 #A1 Report - 07 - Hedging Evaluation
 subdfR.f <- function(df, v1, v2, v3, tName, yy){ #input df, criteria vector 1-v1 , criteria vector 2-v2, & v3 for classf output relevant df
       u1 <- match(df[,"Underlying"], v1, nomatch = 0) > 0 ##df[,"Underlying"] %in% v1
@@ -200,15 +250,24 @@ sumprov.vary.f <- function(df, step, yy, ss0, exss0, varyund = T){
 } #vary underlying price #input a subset fulltran df, and step, output: sum of proceed for each step case
 
 scoreH.f <- function(P.type.h, P.type.t, sumq = T){
+            notran <- sd(P.type.h) == 0; nouser <- sd(P.type.t) ==0 
             s1 <- scoreH1.f(P.type.h, P.type.t)
             s2 <- scoreH2.f(P.type.h, P.type.t)
             s3 <- scoreH3.f(P.type.h, P.type.t)
-            
-            if(sumq){
-                  sum(s1,s2,s3)
+                  if(sumq){
+                        out <- sum(s1,s2,s3)
+                  }else{
+                        out <- c(s1,s2,s3)
+                  }
+
+            if(nouser){
+                  out*0.5
+            }else if(notran){
+                  out - 3     
             }else{
-                  c(s1,s2,s3)
+                  out     
             }
+         
 }
 
 #Criteria 1: Ma = kMu, k = [a,b]
@@ -271,4 +330,16 @@ scoreH3.f <- function(P.type.h, P.type.t){
             }
       }
       
+}
+
+
+#A1 Report - 09 - Cash Evaluation
+score.cash.f <- function(df, yy, tName){
+      u1 <- df[,"Remarks"] %in% "ST loan due to negative cash"; u2 <- df[, "tDate"] == yy
+      u3 <- df[,"TeamName"] == tName
+      if(sum(u1 & u2 & u3) == 0){
+            10
+      }else{
+            0
+      }
 }
