@@ -1,0 +1,287 @@
+---
+title: "HedgeMaster 2016 Report" 
+author: 
+# date: "September 26, 2016"
+output: html_document
+---
+##*End of Year `r yy+1`*
+##*`r tname`*  
+
+  
+### 1 - CORE BUSINESS: Brief Report
+```{r echo=FALSE}
+options(digits = 4)
+my_df <- cReport_list[[i]]
+knitr::kable(my_df)
+      profit1 <- round(sum(my_df[, "TotalProfit"]),0)
+      profit1 <- formatC(profit1, digits = 2, big.mark = ",", format="f")
+```
+
+*Total profit from running the usual business is `r profit1`*
+
+### 2 - SCENARIO: Transactions
+```{r echo=FALSE}
+my_df <- sReport_list[[i]]
+knitr::kable(my_df)
+profit2 <- sum(my_df[,"ProT"], na.rm = T)
+profit2 <- formatC(profit2, digits = 2, big.mark = ",", format="f")
+```
+
+*End of the year cash flow from Scenario-related transactions is `r profit2`*
+
+
+### 3 - EXTRA EVENT: Transactions
+```{r echo=FALSE}
+
+my_df <- eReport_list[[i]]
+if(nrow(my_df) == 0){
+      profit3 <- 0
+      profit3 <- formatC(profit3, digits = 2, big.mark = ",", format="f")
+}else{
+      profit3 <- sum(my_df[,"ProT"], na.rm = T)
+      profit3 <- formatC(profit3, digits = 2, big.mark = ",", format="f")
+      knitr::kable(my_df)
+}
+
+```
+
+*End of the year cash flow from Extra-Event-related transactions is `r profit3`*
+
+### 4 - EXC & OTC: Transactions 
+```{r echo=FALSE}
+my_df <- uReport_list[[i]]
+if(nrow(my_df) == 0){
+      profit4 <- 0
+}else{
+      profit4 <- sum(my_df[,"ProT"], na.rm = T)
+      profit4 <- format(profit4,big.mark=",", trim=TRUE)
+      knitr::kable(my_df)
+}
+profit4 <- formatC(profit4, digits = 2, big.mark = ",", format="f")
+
+```
+
+*End of the year cash flow from EXC & OTC transactions is `r profit4`*
+
+### 5 - OTHER: Transactions
+```{r echo=FALSE}
+
+```
+*Not Applicable.*
+
+### 6 - Statement of Financial Position as at end of Year `r yy+1`
+```{r echo=FALSE}
+acc1df <- balsh_new_yy2[i,]
+acc0df <- balsh_y[i,]
+
+#asset vector[new = 1, old = 2]
+ppe <- fa <- cash <- tasset <- sharecap <- re <- tasset <- tequity <- loan <- tEL <- vector()
+ppe[1] <- acc1df[1,2]; ppe[2] <- acc0df[1,2]; ppeN <- formatC(ppe, digits = 2, big.mark = ",", format="f")
+fa[1] <- acc1df[1,3]; fa[2] <- acc0df[1,3]; faN <-formatC(fa, digits = 2, big.mark = ",", format="f")
+cash[1] <- acc1df[1,4]; cash[2] <- acc0df[1,4]; cashN <- formatC(cash, digits = 2, big.mark = ",", format="f")
+for(i in 1:2){
+      tasset[i] <- sum(as.numeric(c(ppe[i],fa[i],cash[i])))
+}; tassetN <- formatC(tasset, digits = 2, big.mark = ",", format="f")
+
+#equity
+sharecap[1] <- acc1df[1,5]; sharecap[2] <- acc0df[1,5]; sharecapN <- formatC(sharecap, digits = 2, big.mark = ",", format="f")
+re[1] <- acc1df[1,6]; re[2] <- acc0df[1,6]; reN <- formatC(re, digits = 2, big.mark = ",", format="f")
+
+for(i in 1:2){
+      tequity[i] <- sum(as.numeric(c(sharecap[i],re[i])))
+}; tequityN <- formatC(tequity, digits = 2, big.mark = ",", format="f")
+
+loan[1] <- acc1df[1,7]; loan[2] <- acc0df[1,7]; loanN <- formatC(loan, digits = 2, big.mark = ",", format="f")
+      #tequity+loan
+for(i in 1:2){
+      tEL[i] = sum(as.numeric(c(loan[i], tequity[i])))
+}; tELN <- formatC(tEL, digits = 2, big.mark = ",", format="f")
+
+tname2 <- toupper(tname)
+```
+
+####**`r tname2`**  
+####**STATEMENT OF FINANCIAL POSITION**  
+####**AS AT END OF YEAR `r yy+1`**  
+
+|             | AS AT END OF YR `r yy+1` |  AS AT END OF YR `r yy` |
+|---------------------:|:---------------|----------------|
+|             | (RM)  | (RM)    |
+| **ASSETS**  |       |         |
+| PPE                         | `r ppeN[1]`        | `r ppeN[2]`        | 
+| Financial Asset             | `r faN[1]`         | `r faN[2]`         |
+| Cash                        | `r cashN[1]`       | `r cashN[2]`       | 
+| **Total Assets**            | `r tassetN[1]`     | `r tassetN[2]`     |
+|  |  |  | 
+| **EQUITY AND LIABILITIES** |  |  |
+| **Equity attributable to owners of the company** |  |  | 
+| Share Capital               | `r sharecapN[1]`   | `r sharecapN[2]`   | 
+| Retained Earnings           | `r reN[1]`         | `r reN[2]`         |
+| **Total equity**            | `r tequityN[1]`    | `r tequityN[2]`    | 
+|  |  |  | 
+| **Liabilities** |  |  | 
+| Loan                  | `r loanN[1]` | `r loanN[2]` |
+| **Total liabilities** | `r loanN[1]` | `r loanN[2]` | 
+|  |  |  | 
+| **Total equity and liabilities**        | `r tELN[1]` | `r tELN[2]` | 
+|  |  |  | 
+| *Net assets attributable to owners (NAV)* | `r tequityN[1]` | `r tequityN[2]` | 
+
+
+###7 - EVALUATION ~ Hedging `r tname`
+```{r, echo=FALSE, fig.show='hold', fig.height=17, fig.width=22.5}
+
+my_df <- scoredf_byteam_list[[i]]; scorehedging <- my_df[1,yy+2]
+
+A02.f.dir <- "C:/Users/User/Google Drive/z_ALLHM"
+setwd(A02.f.dir); source("A02_Reportf.R")
+
+prosimTdf_list <- prolist.f(fdf8_td, tname, yy)              
+               
+#cru1, pal2, eur3, golusd4
+#loop for cru, pal and gol
+class1 <- c("CRU","PAL", "EUR", "GOL", "USD"); class2 <- c("CRU","PAL", "EUR", "USD", "GOL")
+
+plotUlist <- lapply(c(1,2,4), FUN = function(q){
+{
+dfa <- prosimTdf_list[[q]]; ss0 <- dfa[31, "xU"] 
+#"NoHedge.C", "User.C", "Aggregate.C", "NoHedge.U", "User.U", "Aggregate.U", "xU", "xC"
+m.var <- c("NoHedge.U", "User.U", "Aggregate.U")
+replace.m <- c("Without Hedge", "Your Transactions", "Aggregate Portfolio")
+                                                                 
+dfb <- melt(dfa, id.vars = "xU", measure.vars = m.var)
+levels(dfb$variable) <- replace.m
+
+xlab <- paste0("Spot price of ", class1[q] , " at time T, ST")
+colnames(dfb) <- c("x", "Portfolio", "value");
+}
+      
+if(min(dfb[,"value"]) ==0 & max(dfb[,"value"]) ==0){
+      ddg <- 0
+}else{ddg <- 0.1}
+p1 <- ggplot(dfb, aes(x=x, y=value, colour=Portfolio)) +
+      # geom_line(alpha=0.9, size = 1, position= position_dodge(ddg)) + 
+      # geom_line(alpha=0.8, size = 1.2, position=position_jitter(width=ddg, height=ddg)) + 
+      geom_line(alpha=1, size = 1.2)+
+      xlab(label = xlab) +
+      ylab(label = "Cash flow at time T") +
+      ggtitle("Simulated cash flow of various portfolio based on varying spot prices")+
+      geom_hline(aes(yintercept=0), colour="grey", linetype="solid", size = 0.6) +       
+      geom_vline(aes(xintercept=ss0), colour="black", linetype="dashed", size = 1.25) + 
+      geom_text(aes(x = ss0, y = 0, label = paste0("S0 = ",ss0)), size = 3.5, hjust = -0.1, vjust = 2) 
+
+p1
+
+
+      
+})
+
+plotClist <- lapply(c(3,4), FUN = function(q){
+{
+      
+dfa <- prosimTdf_list[[q]]; ss0 <- dfa[31, "xC"] 
+#"NoHedge.C", "User.C", "Aggregate.C", "NoHedge.U", "User.U", "Aggregate.U", "xU", "xC"
+m.var <- c("NoHedge.C", "User.C", "Aggregate.C")
+replace.m <- c("Without Hedge", "Your Transactions", "Aggregate Portfolio")
+                                                                 
+dfb <- melt(dfa, id.vars = "xC", measure.vars = m.var)
+levels(dfb$variable) <- replace.m
+
+xlab <- paste0("Spot price of ", class2[q] , " at time T, ST")
+colnames(dfb) <- c("x", "Portfolio", "value")
+}
+      
+if(min(dfb[,"value"]) ==0 & max(dfb[,"value"]) ==0){
+      ddg <- 0
+}else{ddg <- 0.1}
+p1 <- ggplot(dfb, aes(x=x, y=value, color=Portfolio)) +
+      # geom_line(alpha=0.9, size = 1) +
+      # geom_line(alpha=0.9, size = 1.2, position= position_dodge(ddg)) + 
+      # geom_line(alpha=0.8, size = 1.2, position=position_jitter(width=ddg, height=ddg)) +
+      geom_line(alpha=1, size = 1.2)+
+      xlab(label = xlab) +
+      ylab(label = "Cash flow at time T") +
+      # ylim(miny, maxy) + 
+      ggtitle("Simulated cash flow of various portfolio based on varying spot prices")+
+      geom_hline(aes(yintercept=0), colour="black", linetype="solid", size = 0.6) +       
+      geom_vline(aes(xintercept=ss0), colour="black", linetype="dashed", size = 1.25) + 
+      geom_text(aes(x = ss0, y = 0, label = paste0("S0 = ",ss0)), size = 3.5, hjust = -0.1, vjust = 2) 
+
+p1
+
+})
+      
+
+
+# plot 5 graphs
+plot_grid(plotUlist[[1]], plotUlist[[2]], plotUlist[[3]], plotClist[[1]], plotClist[[2]], align='h', ncol = 2)
+
+
+
+```
+
+*The score for this section (Hedging) is `r scorehedging`*
+
+###8 - EVALUATION ~ Cash Flow
+```{r echo=FALSE}
+my_df <- scoredf_byteam_list[[i]]
+c.score <- my_df[2,yy+2]
+if(c.score == 0){
+      msg <- "Your company's cash balance falls below 0. A short term loan with an interest of 12% is borrowed automatically from a 3rd party bank. The loan will be repaid fully by the end of next year. The loan amount taken up is the amount required to reach a cash balance of MYR 1 million. E.g. If your cash balance is -2 million after the trading period, a loan of 3 million will be taken, so that the post-cash balance is 1 million."
+     
+}else{
+      msg <- "Your company's cash balance remains positive."
+}
+```
+
+*`r msg`*  
+
+*The score for this Cash Flow Evaluation section is `r c.score`.*
+
+###9 - EVALUATION ~ Extra Event
+```{r echo=FALSE}
+if(yy %in% c(0,1)){
+      df <- fdf8_td
+      u1 <- df[, "TeamName"] == tname; u2 <- df[, "cType"] == "Employ Service";
+      u3 <- df[,"tDate"] == yy
+      if(sum(u1 & u2 & u3) > 0){
+            servchosen <- df[u1 & u2 & u3, "FIC"]
+      }else{servchosen <- "None"}
+      
+            e.score <- scoredf_byteam_list[[i]][3,yy+2]
+msg <- paste0(servchosen, " was chosen. The score for Extra Event this year is ", e.score)
+      
+}else if(yy == 4){
+       u1 <- df[, "TeamName"] == tname; u2 <- df[, "cParty"] == "Harry M."
+       u3 <- df[,"tDate"] == yy
+       if(sum(u1 & u2 & u3) > 0){
+            ursharpe <- df[u1 & u2 & u3, "kPrice"]
+       }else{
+            ursharpe <- "NA"
+       }
+
+msg <- paste0("The sharpe ratio computed from the input weightage is ,", ursharpe, ". The maximum sharpe ratio is ", maxsharpeR1, ". The score is ", e.score, " .")
+       
+}else{
+      "Not Applicable"
+}
+```
+
+*`r msg`*
+
+
+###10 - Total Score Breakdown - `r tname`
+```{r echo=FALSE}
+my_df <- scoredf_byteam_list[[i]]
+knitr::kable(my_df)
+
+h.score <- my_df[1,yy+2]
+c.score <- my_df[2,yy+2]
+e.score <- my_df[3,yy+2]
+n.score <- my_df[4,yy+2]
+if(n.score == 0){
+      msg <- paste0("*Score(NAV) will be measured at the end of Year 5. Score(NAV) will be 0 for other years.")
+}
+```
+
+*`r msg`*
