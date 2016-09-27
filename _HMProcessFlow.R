@@ -1,5 +1,6 @@
 source("C:/Users/User/Google Drive/r_Rfunction/_myCode.R")
 library(reshape2); library(knitr) #install.packages(rmarkdown);
+library(ggplot2)
 
 #set year to "collect" data from, i.e. EXC_0 >> yy <- 0
 yy <- 0
@@ -149,15 +150,16 @@ out.report.dir <- "C:/Users/User/OneDrive/R_report"
 
 setwd(A1.dir); source("A1_01_Core.R") #get 10 list for report? - aggregate them! >write.csv //rmarkdown      
 
-temp <- lapply(1:length(teamname12), FUN = function(i){
-      tname <- teamname12[i]; fname <- paste0(tname, "_Report_", yy+1)
-      tname <- tname #main parameter to Report.Rmd
-      rmarkdown::render(input = "Report.Rmd", output_format = "html_document", output_file = paste0(fname, ".html"), output_dir = out.report.dir)
-
-})
+# temp <- lapply(1:length(teamname12), FUN = function(i){
+#       tname <- teamname12[i]; fname <- paste0(tname, "_Report_", yy+1)
+#       tname <- tname #main parameter to Report.Rmd
+#       rmarkdown::render(input = "Report.Rmd", output_format = "html_document", output_file = paste0(fname, ".html"), output_dir = out.report.dir)
+# 
+# })
 
 setwd(A1.dir)
 temp <- lapply(1:1, FUN = function(i){
+      i <<- i
       tname <- teamname12[i]; fname <- paste0(tname, "_Report_", yy+1)
       tname <- tname #main parameter to Report.Rmd
       options(scipen=12)

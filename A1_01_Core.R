@@ -106,12 +106,13 @@ e80f.dir <- "C:/Users/User/Google Drive/z_ALLHM"
       setwd(e80f.dir); source("80_01_END1Functions.R") #cff_f and ProTf, STf, exSTf
 
 #$$###click #optional
-{
       #teamnamelist > commlist > teamd      
       v1 <-  c("GOL", "CRU", "PAL"); v2 <- c("USD", "EUR"); v3user <- c("OTC", "EXC"); v3hedge <- c("Scenario", "Extra")
       
       commClass <- list("CRU", "PAL", "EUR", c("GOL", "USD"))
       
+{
+
       hlist <- lapply(teamname12, FUN = function(k){
                  lapply(commClass, FUN = function(j){
                         u1 <- fdf8_td[,"Underlying"] %in% j; u2 <- fdf8_td[,"Currency"] %in% j; u <- u1 | u2

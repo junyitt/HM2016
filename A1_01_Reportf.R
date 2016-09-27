@@ -144,6 +144,7 @@ old2newbs.f <- function(balsh_y, acc1, pro0, proT){
       balsh_y[,"Cash"] <- balsh_y[,"Cash"] + pro0 + proT
       balsh_y[,"FinAsset"] <- acc1[,"FinAsset"]
       balsh_y[,"Loan"] <- acc1[,"Loan"]
+      balsh_y[,"RE"] <- balsh_y[,"PPE"] + balsh_y[,"FinAsset"] + balsh_y[,"Cash"] - balsh_y[,"ShareCap"] - balsh_y[,"Loan"]
       balsh_y
 } #return new balance sheet
 
