@@ -1,8 +1,8 @@
 
 #A1 Report - 01 - Core  
 core.f <- function(tName, df){
-      u <- df[,"TeamName"] == tName
-      u2 <- df[,"classf"] == "Core"
+      u <- df[,"TeamName"] %in% tName
+      u2 <- df[,"classf"] %in% "Core"
       u3 <- grepl(pattern = "^Service", df[, "FIC"])
       u5 <- grepl(pattern = "^AFUT", df[,"cType"])
       u6 <- grepl(pattern = "^Production", df[,"cType"]) #CORE
@@ -87,8 +87,8 @@ scenario.f <- function(tName, df, yy){
       dispvar <- c("TrackNo", "FIC", "cParty", "cType", "Underlying", "Currency", "kPrice", 
                    "pos1", "Units", "tDate", "mDate", "NetPro", "ProT", "MVT")
       
-      u <- df[,"TeamName"] == tName
-      u1 <- df[, "classf"] == "Scenario"
+      u <- df[,"TeamName"] %in% tName
+      u1 <- df[, "classf"] %in% "Scenario"
       yy2 <- yy+1; u2 <- df[, "tDate"] < yy2 & yy2 <= df[,"mDate"]
       
       #outdf: 
@@ -104,8 +104,8 @@ extraR.f <- function(tName, df, yy){
       dispvarE <- c("TrackNo", "FIC", "cParty", "cType", "Underlying", "Currency", "kPrice", 
                     "pos1", "Units", "tDate", "mDate", "NetPro", "ProT", "MVT", "VL")
       
-      u <- df[,"TeamName"] == tName
-      u1 <- df[, "classf"] == "Extra"
+      u <- df[,"TeamName"] %in% tName
+      u1 <- df[, "classf"] %in% "Extra"
       yy2 <- yy+1; u2 <- df[, "tDate"] < yy2 & yy2 <= df[,"mDate"]
       
       #outdf: 
@@ -119,8 +119,8 @@ userR.f <- function(tName, df){
       dispvarU <- c("TrackNo", "FIC", "cParty", "cType", "Underlying", "Currency", "kPrice", 
                     "pos1", "Units", "tDate", "mDate", "NetPro", "ProT", "MVT", "VL", "VLRemarks", "Remarks")
       
-      u <- df[,"TeamName"] == tName
-      u1 <- df[, "classf"] == c("OTC", "EXC")
+      u <- df[,"TeamName"] %in% tName
+      u1 <- df[, "classf"] %in% c("OTC", "EXC")
       
       #outdf: 
       df[u & u1, dispvarU]
@@ -145,6 +145,7 @@ old2newbs.f <- function(balsh_y, acc1, pro0, proT){
       balsh_y[,"FinAsset"] <- acc1[,"FinAsset"]
       balsh_y[,"Loan"] <- acc1[,"Loan"]
       balsh_y[,"RE"] <- balsh_y[,"PPE"] + balsh_y[,"FinAsset"] + balsh_y[,"Cash"] - balsh_y[,"ShareCap"] - balsh_y[,"Loan"]
+      balsh_y[,"NAV"] <- balsh_y[,"RE"]+balsh_y[,"ShareCap"]
       balsh_y
 } #return new balance sheet
 
@@ -237,9 +238,9 @@ sumprov.vary.f <- function(df, step, yy, ss0, exss0, varyund = T){
                                           tDate <-  dfcalc[i,"tDate"]; mDate <-  dfcalc[i,"mDate"]
                                     } #assign FIC, cType, cff1 etc.
                                     if(varyund){
-                                          pros0 <- ProTf(FIC, cType, cff1, Units, Pro, kPrice, tDate, mDate, ss0*r, exss0, yy+1)
+                                          pros0 <- ProTf(FIC, cType, cff1, Units, Pro, kPrice, tDate, mDate, ss0*r, exss0, yy)
                                     }else{
-                                          pros0 <- ProTf(FIC, cType, cff1, Units, Pro, kPrice, tDate, mDate, ss0, exss0*r, yy+1)
+                                          pros0 <- ProTf(FIC, cType, cff1, Units, Pro, kPrice, tDate, mDate, ss0, exss0*r, yy)
                                     }
                                     if(!is.numeric(pros0)){0}else{pros0}
                                     
@@ -337,7 +338,7 @@ scoreH3.f <- function(P.type.h, P.type.t){
 #A1 Report - 09 - Cash Evaluation
 score.cash.f <- function(df, yy, tName){
       u1 <- df[,"Remarks"] %in% "ST loan due to negative cash"; u2 <- df[, "tDate"] == yy
-      u3 <- df[,"TeamName"] == tName
+      u3 <- df[,"TeamName"] %in% tName
       if(sum(u1 & u2 & u3) == 0){
             10
       }else{

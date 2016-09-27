@@ -69,7 +69,7 @@ eReport_list <- lapply(teamname12, FUN = function(x){
 #output s_list      
 uReport_list <- lapply(teamname12, FUN = function(x){
       uR.df <- userR.f(x, fdf8_td)
-      
+      uR.df
 })
 } #uReport_list
 
@@ -95,7 +95,8 @@ uReport_list <- lapply(teamname12, FUN = function(x){
             colnames(balsh_y) <- c("TeamName", "PPE", "FinAsset", "Cash", "ShareCap", "RE", "Loan", "NAV")
       } #balsh_y
       
-      balsh_new_yy2 <- newbs.df.f(balsh_y, fdf8_td , teamname12, fdf_y7)
+      balsh_new_yy2 <- newbs.df.f(balsh_y, fdf8_td , teamname12, fdf_y7); 
+      setwd(balshy.dir); write.csv(balsh_new_yy2, paste0("meta-balancesheet-", yy+1, ".csv"), row.names = F)
 
 }  #balsh_new_yy2 (df); old: balsh_y
 
@@ -247,10 +248,15 @@ score_hedge_byteam <- sapply(teamname12, FUN = function(j){
       })
 } #score.cash
 
-      #A1 Report - 09b - NAV #UNDONE
-      {
+#A1 Report - 09b - NAV 
+{
+      if(yy == 4){
+            nav_v <- balsh_new_yy2[,"NAV"]
+            score.NAV <- rank(nav_v)/12*5
+      }else{
             score.NAV <- rep(0, 12)     
-      }#score.NAV
+      }
+}#score.NAV
 
 #A1 Report - 10 - Total Score Breakdown
 {

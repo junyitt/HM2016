@@ -2,7 +2,7 @@
 
 
 #DIR
-EXCrawdir <- "C:/Users/User/Google Drive/z_ALLHM/v5U_UserTranRaw/EXC"
+EXCrawdir <- "C:/Users/User/OneDrive/1_Form_EXC"
 excficmetadir <- "C:/Users/User/Google Drive/z_ALLHM/v5.0_7_Instruments"
 tkeymetadir <- "C:/Users/User/Google Drive/z_ALLHM/v5M_meta/"
       EXCfdir <- "C:/Users/User/Google Drive/z_ALLHM/"

@@ -38,6 +38,6 @@ setwd(wd_metaunderlyingprice)
 }#output: fdf_td
 
 #final ST df
-fdf8_td <- fdf8_f(fdf_td, yy+1)
+fdf8_td <- fdf8_f(fdf_td, yy) #use yy, function inside 'chg' to yy + 1 or cater for yy
 
 

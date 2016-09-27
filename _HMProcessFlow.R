@@ -1,9 +1,9 @@
 source("C:/Users/User/Google Drive/r_Rfunction/_myCode.R")
 library(reshape2); library(knitr) #install.packages(rmarkdown);
-library(ggplot2)
+library(ggplot2); library(gridExtra); require(cowplot)
 
 #set year to "collect" data from, i.e. EXC_0 >> yy <- 0
-yy <- 0
+# yy <- 0
 
 #Section 4 to 8 (fdf) 
 {
@@ -122,6 +122,7 @@ setwd(EXTRAraw2full.R_dir); source("03_EXTRA_raw_full.R")
       
       setwd(end8.dir)
       source("80_END1.R") #output fdf8_td
+      fdf8_td[,"TrackNo"] <- trackno_f(fdf8_td)
 } #output: fdf8_td
       
       ############################
@@ -136,33 +137,46 @@ setwd(EXTRAraw2full.R_dir); source("03_EXTRA_raw_full.R")
       
 } #fdf8_td
 
-
-#to be continued  #need to do team classfication here, mv classf
+{
 ############################
-# A1_Report
+# A1_Report_prep_list
 ###########################
 
 #DIR-A1 
 A1.dir <- "C:/Users/User/Google Drive/z_ALLHM"
-#output-report-DIR
-out.report.dir <- "C:/Users/User/OneDrive/R_report"
 
 
 setwd(A1.dir); source("A1_01_Core.R") #get 10 list for report? - aggregate them! >write.csv //rmarkdown      
 
-# temp <- lapply(1:length(teamname12), FUN = function(i){
-#       tname <- teamname12[i]; fname <- paste0(tname, "_Report_", yy+1)
-#       tname <- tname #main parameter to Report.Rmd
-#       rmarkdown::render(input = "Report.Rmd", output_format = "html_document", output_file = paste0(fname, ".html"), output_dir = out.report.dir)
-# 
-# })
-
-setwd(A1.dir)
+tname <- "Alpha 1"
 temp <- lapply(1:1, FUN = function(i){
       i <<- i
       tname <- teamname12[i]; fname <- paste0(tname, "_Report_", yy+1)
       tname <- tname #main parameter to Report.Rmd
-      options(scipen=12)
-rmarkdown::render(input = "Report.Rmd", output_format = "html_document", output_file = paste0(fname, ".html"), output_dir = out.report.dir)
+      # options(scipen=12)
+      rmarkdown::render(input = "Report.Rmd", output_format = "html_document", output_file = paste0(fname, ".html"), output_dir = out.report.dir)
+      
+})
+
+} #Report prep
+
+{
+############################
+# A2_Report_output
+###########################
+
+#output-report-DIR
+out.report.dir <- "C:/Users/User/OneDrive/D_Distribute/R_report"
+
+setwd(A1.dir) #for Report.Rmd
+temp <- lapply(1:length(teamname12), FUN = function(i){
+      i <<- i
+      tname <- teamname12[i]; fname <- paste0(tname, "_Report_", yy+1)
+      tname <- tname #main parameter to Report.Rmd
+      
+      rmarkdown::render(input = "Report.Rmd", output_format = "html_document", output_file = paste0(fname, ".html"), output_dir = out.report.dir)
 
 })
+
+} #REPORT: output 12 html report to R_Report, waiting to be distributed
+

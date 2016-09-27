@@ -21,8 +21,8 @@ fdf8_f <- function(df, yy){
             for(j in 1:N){
                   if(VL[j] == 1){
                         cff[j] <- cff_f(cType[j], pos1[j])
-                        ST[j] <- STf(Underlying[j], yy)
-                        exST[j] <- exSTf(Currency[j], yy)
+                        ST[j] <- STf(Underlying[j], yy+1)
+                        exST[j] <- exSTf(Currency[j], yy+1)
                         ProT[j] <- ProTf(FIC[j], cType[j], cff[j], Units[j], Pro[j], kPrice[j], tDate[j], mDate[j], ST[j], exST[j], yy)
                         MVT[j] <- MVTf(FIC[j], cType[j], cff[j], Units[j], Pro[j], kPrice[j], tDate[j], mDate[j], ST[j], exST[j], yy)
                   }else{
@@ -74,7 +74,7 @@ STf <- function(Underlying, td){
             ST <- NA
       }
       ST
-} #dfmetaunderprice
+} #dfmetaunderprice #td refers to yy2!
 
 exSTf <- function(Currency, td){
       if(Currency %in% colnames(dfmetaunderprice)){
@@ -83,7 +83,7 @@ exSTf <- function(Currency, td){
             exST <- 1
       }
       exST
-} #dfmetaunderprice
+} #dfmetaunderprice #td refers to yy2!
 
 ProTf <- function(FIC, cType, cff, Units, Pro, kPrice, tDate, mDate, ST, exST, yy){
       m1 <- c("Employ Service") #zero proT because count on pro0
@@ -95,7 +95,7 @@ ProTf <- function(FIC, cType, cff, Units, Pro, kPrice, tDate, mDate, ST, exST, y
       m7 <- c("Call Option", "Call Option-S", "Call Option-E")
       m8 <- c("Loan")
       m9 <- c("Bond-E")
-      mm <- mDate == yy #criteria
+      mm <- mDate == yy+1 #criteria
       
       if(cType %in% m1){
             0
@@ -117,7 +117,7 @@ ProTf <- function(FIC, cType, cff, Units, Pro, kPrice, tDate, mDate, ST, exST, y
             n1 <- mDate - tDate
             loanamt <- abs(Units)
             pay1 <- loanamt*r1/(1-(1+r1)^(-1*n1)) #payment per year in foreign currency
-            if(tDate < yy & mDate <= yy){
+            if(tDate < yy+1 & mDate >= yy+1){ #BIG MISTAKES CORRECTED! <= to >=
                   cff*pay1*exST
             }else{
                   0
@@ -125,13 +125,13 @@ ProTf <- function(FIC, cType, cff, Units, Pro, kPrice, tDate, mDate, ST, exST, y
       }else if(cType %in% m9){
             #meta
             uu <- dfmetabonde[,"FIC"] == FIC
-            if(yy == 3){
+            if(yy+1 == 3){
                   0
-            }else if(yy == 4){
+            }else if(yy+1 == 4){
                   cff*units*dfmetabonde[uu, "Pro4"]*exST
-            }else if(yy == 5){exST
+            }else if(yy+1 == 5){exST
                   cff*units*dfmetabonde[uu, "Pro5"]*exST
-            }else{exST
+            }else{
                   0
             }
       }
@@ -147,15 +147,16 @@ MVTf <- function(FIC, cType, cff, Units, Pro, kPrice, tDate, mDate, ST, exST, yy
             0
       }else if(cType %in% tdatemv){
             if(tDate == yy){
-                  cff*abs(Pro)
+                  # cff*abs(Pro)
+                  0
             }else{0}
       }else if(cType %in% loanmv){
             r1 <- kPrice
             n1 <- mDate - tDate
             loanamt <- abs(Units)
             pay1 <- loanamt*r1/(1-(1+r1)^(-1*n1)) #payment per year in foreign currency
-            n2 <- yy-tDate; n3 <- mDate - yy
-            if(n2 > 0 & n3 > 0){
+            n2 <- mDate - (yy+1)
+            if(n2 > 0 & yy >= tDate){
                   mvex <- pay1*(1-(1+r1)^(-1*n2))/(r1) #mv in foreign currency
                   cff*exST*mvex #pro >(-cff) is opposite of mv -> cff
             }else{
@@ -164,7 +165,7 @@ MVTf <- function(FIC, cType, cff, Units, Pro, kPrice, tDate, mDate, ST, exST, yy
       }else if(cType %in% bondmeta){
             uu <- dfmetabonde[,"FIC"] == FIC
             if(yy == 3){
-                  cff*units*dfmetabonde[uu, "Proceed"]*exST
+                  cff*units*dfmetabonde[uu, "Proceed"]*exST #unnecessary
             }else if(yy == 4){
                   cff*units*dfmetabonde[uu, "MV4"]*exST
             }else if(yy == 5){exST

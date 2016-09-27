@@ -1,7 +1,7 @@
 #02_OTC_raw_full.R
 
 #DIR
-OTCrawdir <- "C:/Users/User/Google Drive/z_ALLHM/v5U_UserTranRaw/OTC"
+OTCrawdir <- "C:/Users/User/OneDrive/1_Form_OTC"
 OTCfdir <- "C:/Users/User/Google Drive/z_ALLHM/"
 
 #FUNCTION
