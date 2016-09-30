@@ -17,12 +17,14 @@
             teamname1 <- tKeydf[, "TeamName"]
             teamname1 <- gsub(tolower(teamname1), pattern = "[[:space:]]", replacement = "")     
             tname2 <- gsub(tolower(tName), pattern = "[[:space:]]", replacement = "") 
-            uu <- teamname1 == tname2
+            uu <- teamname1 %in% tname2
             tkey1 <- tKeydf[uu, "tKey"]
             #invalid if wrong trading key
-            if(is.na(tKey)){
+            if(length(tKey) == 0){
                   0
-            }else if(!(tKey == tkey1)){
+            }else if(is.na(tKey)){
+                  0
+            }else if(!(tKey %in% tkey1)){
                   0
             }else{
                   1
@@ -55,13 +57,16 @@
 
       #DUPLICATE: return the value of the desired variable, input: FIC, metadf, variablename
       exc_valf <- function(FIC, metadf, vname){
-            uu <- metadf[,"FIC"] == FIC
+            uu <- metadf[,"FIC"] %in% FIC
             #vname can take: Underlying, Currency, kPrice, tDate, mDate
             tryCatch(metadf[uu, vname], error = function(e){NA})
       }
 
       conv2extra_f <- function(EXTRArawdf, excficmetadf, tkeydf){
-      EXTRArawdf <- subcutdf_f(EXTRArawdf) 
+            EXTRArawdf <- subcutdf_f(EXTRArawdf) 
+if(nrow(EXTRArawdf) == 0){
+
+}else{
       
       #FULL-TRAN required variables list
       fullvar1 <- c("TrackNo","classf", "FIC", "rClass", "sClass", "TeamName", "cParty", 
@@ -97,11 +102,13 @@
                         VLRemarks <- sapply(X=1:N, function(j){VLRf(VL[j])}) 
                         
       #output fulldf
-      efdf <- data.frame(TrackNo, classf, FIC, rClass, sClass, TeamName, cParty, 
+      efdf <<- data.frame(TrackNo, classf, FIC, rClass, sClass, TeamName, cParty, 
             cType, Underlying, Currency, kPrice, 
             pos1, Units, tDate, mDate, tKey, Remarks,
             VL, VLRemarks)
+      colnames(efdf) <- fullvar1
       efdf
+}
 }
 
 ########YR 3  BOND FAIR XV
@@ -244,7 +251,7 @@
                         maxs <- maxsharpe(rr, cv); maxsharpeR1 <<- maxs
                         dev <- abs((maxs - j)/maxs)
                         threshold <- c(0.01, 0.05, 0.10, 0.20, 0.50)
-                        score <- c(20, 18, 15, 10, 5, 0)
+                        score <- c(20, 18, 15, 10, 5, 0)/20*15
                         tr <- dev > threshold
                         score[sum(tr)+1]
                   }
@@ -280,7 +287,7 @@
                               Units <- cashrewardn
                               tDate <- rep(4,N)
                               mDate <- rep(5,N)
-                              tKey <- substr(edf[,"tKey"], 4, 7)
+                              tKey <- rep("tkey", N) #fixed later
                               Remarks <- rem
                                     VL <-  rep(1,N)
                                     VLRemarks <- scoren #; score.extra4 <<- scoren

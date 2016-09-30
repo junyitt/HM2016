@@ -1,4 +1,9 @@
 #03_EXTRA_raw_full.R
+#############
+startcut.f.dir <- "C:/Users/User/Google Drive/z_ALLHM/"
+setwd(startcut.f.dir); source("01A_startcutoff_f.R")
+########
+
 
 ######################
       #4_ConvUser EXTRA
@@ -6,6 +11,8 @@
 
 #DIR
 EXTRArawdir <- "C:/Users/User/OneDrive/1_Form_EXTRA"
+if(real_run == T){EXTRArawdir<-gsub("1", "f", EXTRArawdir)}else{}
+
 EXTRAfdir <- "C:/Users/User/Google Drive/z_ALLHM/"
 tkeymetadir <- "C:/Users/User/Google Drive/z_ALLHM/v5M_meta/"
 cvmetadir <- "C:/Users/User/Google Drive/z_ALLHM/v5M_meta/"
@@ -50,12 +57,13 @@ source("03_01_EXTRA_functions.R")
 # yy <- 4
 if(yy %in% c(0,1)){
       setwd(EXTRArawdir)
-      EXTRArawdfa <- as.data.frame(read_excel(paste0("EXTRA_", yy, "A.xlsx"))); EXTRArawdfa <- subcutdf_f(EXTRArawdfa)
-      EXTRArawdfb <- as.data.frame(read_excel(paste0("EXTRA_", yy, "B.xlsx"))); EXTRArawdfb <- subcutdf_f(EXTRArawdfb)
+      EXTRArawdfa <- as.data.frame(read_excel(paste0("EXTRA_", yy, "A.xlsx"))); EXTRArawdfa <- startcutoff.f(EXTRArawdfa) ##Added startjan
+      EXTRArawdfb <- as.data.frame(read_excel(paste0("EXTRA_", yy, "B.xlsx"))); EXTRArawdfb <- startcutoff.f(EXTRArawdfb) ##Added startjan
       EXTRArawdf <- rbind(EXTRArawdfa, EXTRArawdfb)
 }else{
       setwd(EXTRArawdir)
       EXTRArawdf <- as.data.frame(read_excel(paste0("EXTRA_", yy, ".xlsx")))
+      EXTRArawdf <- startcutoff.f(EXTRArawdf) ##Added startjan
 }
 
 if(yy %in% c(0,1)){ 
@@ -64,6 +72,8 @@ if(yy %in% c(0,1)){
       
 }else if(yy %in% c(2)){
       #yr2 - arbitrage - FIC for options
+      setwd(EXTRAfdir)
+      source("03_01_EXTRA_functions.R")
       extrafulltrandf <- conv2extra_f(EXTRArawdf, excficmetadf, tkeydf)
       
 }else if(yy %in% c(3)){

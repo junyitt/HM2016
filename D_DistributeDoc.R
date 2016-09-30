@@ -22,7 +22,7 @@ temp <- lapply(teamname12, FUN = function(tname){
       
       # copy the files to the new folders
       setwd(from.dir)
-      file.copy(from = filetocopy, to.dir)
+      file.copy(from = filetocopy, to.dir, overwrite = T)
 }) #Alpha 1_Report_1.html
 
 #EXTRA, SCENARIO, INSTRUMENTS
@@ -36,7 +36,7 @@ temp2 <- lapply(teamname12, FUN = function(tname){
       #sector 
       if(substr(tname,1,1) == "A"){
             sector <- "Alpha"
-      }else if(substr(tname,1,1) == "A"){
+      }else if(substr(tname,1,1) == "B"){
             sector <- "Beta"
       }
       
@@ -49,7 +49,7 @@ temp2 <- lapply(teamname12, FUN = function(tname){
             doc <- "Extra"
             filezname <- paste0(sector, "_", doc, "_", yy2)
                   filetocopy <- list.files(from.dir, pattern = filezname)
-                  file.copy(from = filetocopy, to.dir)
+                  file.copy(from = filetocopy, to.dir, overwrite = T)
                   
       #Alpha_Scenario_0 #Beta_Scenario_0
       from.dir <- scenario.dir
@@ -57,7 +57,7 @@ temp2 <- lapply(teamname12, FUN = function(tname){
             doc <- "Scenario"
             filezname <- paste0(sector, "_", doc, "_", yy2)
                   filetocopy <- list.files(from.dir, pattern = filezname)
-                  file.copy(from = filetocopy, to.dir)
+                  file.copy(from = filetocopy, to.dir, overwrite = T)
       
       #Prices_Financial Instruments List_0
       from.dir <- instrument.dir
@@ -65,7 +65,7 @@ temp2 <- lapply(teamname12, FUN = function(tname){
             doc <- "Scenario"
             filezname <- paste0("Prices_Financial Instruments List_", yy2)
                   filetocopy <- list.files(from.dir, pattern = filezname)
-                  file.copy(from = filetocopy, to.dir)
+                  file.copy(from = filetocopy, to.dir, overwrite = T)
 
 
 })

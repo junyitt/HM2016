@@ -23,6 +23,7 @@ bgn1df_f <- function(df){
                         cff[i] <- cff_f(cType[i], pos1[i])
                         S0[i] <- S0f(Underlying[i], tDate[i])
                         exS0[i] <- exS0f(Currency[i], tDate[i])
+                              kpp2 <<- kPrice[i]
                               Pro[i] <- Prof(FIC[i], cType[i], cff[i], Units[i], S0[i], exS0[i])
                         
                         Tfee[i] <- Tfeef(FIC[i], cType[i], cParty[i], Units[i], Pro[i], S0[i], exS0[i])
@@ -36,7 +37,7 @@ bgn1df_f <- function(df){
       # }, error = function(e){
       #       print(i)
       # })
-      
+
       #output df with added bgn columns
       data.frame(df, S0, exS0, Pro, Tfee, NetPro)
       
@@ -90,12 +91,13 @@ bgn1df_f <- function(df){
             exs0
       } #dfmetunderprice
       
-      Prof <- function(FIC, cType, cff, Units, S0, exS0){
+      Prof <- function(FIC, cType, cff, Units, S0, exS0){ #need kprice parameter for bond-e
             zeropro <- c("Revenue Increment", "Production", "AFUT", "Forward", "Forward-S", "Cost Reduction", "Cash")
             #Method 1: -1*cff*Units*S0*exS0 
             m1 <- c("Call Option", "Put Option", "Bond")
             ##Method 2: -1*cff*Units*exS0 
             m2 <- c("Employ Service", "Loan")
+            m3 <- c("Bond-E")
             ##Method 3: meta
                   #m3 <- c("Call Option-S", "Put Option-S", "Bond-E", "Call Option-E", "Put Option-E")
                   #or FIC not NA
@@ -107,12 +109,13 @@ bgn1df_f <- function(df){
             }#FIX: NA vs "NA" problem 
             
             if(cType %in% zeropro){0}
-            else if(!is.na(FIC) & !cType %in% m2){
+            else if(!is.na(FIC) & cType %in% m3){
+                  -1*cff*Units*kpp2
+            }else if(!is.na(FIC) & !cType %in% m2){
                   #meta procedure, m3
-                  cc <- dfmetafic[,"FIC"] == FIC
+                  cc <- dfmetafic[,"FIC"] %in% FIC
                   -1*cff*Units*dfmetafic[cc, "Proceed"]
-            }
-            else if(cType %in% m1){-1*cff*Units*S0*exS0}
+            }else if(cType %in% m1){-1*cff*Units*S0*exS0}
             else if(cType %in% m2){-1*cff*Units*exS0}
             else{NA}
       } #dfmetafic

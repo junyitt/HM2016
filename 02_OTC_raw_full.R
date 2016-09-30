@@ -1,7 +1,16 @@
 #02_OTC_raw_full.R
 
+#############
+startcut.f.dir <- "C:/Users/User/Google Drive/z_ALLHM/"
+setwd(startcut.f.dir); source("01A_startcutoff_f.R")
+########
+
+
 #DIR
 OTCrawdir <- "C:/Users/User/OneDrive/1_Form_OTC"
+if(real_run == T){OTCrawdir<-gsub("1", "f", OTCrawdir)}else{}
+
+
 OTCfdir <- "C:/Users/User/Google Drive/z_ALLHM/"
 
 #FUNCTION
@@ -17,6 +26,7 @@ source("02_01_OTC_functions.R")
 #RAW-OTC-TRAN
 setwd(OTCrawdir)
 OTCrawdf <- as.data.frame(read_excel(paste0("OTC_", yy, ".xlsx")))
+OTCrawdf <- startcutoff.f(OTCrawdf) ##Added startjan
 
       #duplicate and fix df
       dupotcrawdf <- duplicate_f(OTCrawdf)

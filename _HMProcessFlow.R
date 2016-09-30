@@ -33,7 +33,26 @@ setwd(EXTRAraw2full.R_dir); source("03_EXTRA_raw_full.R")
       head(extrafulltrandf) #yr2 arbitrage, yr3 bond, yr4 harryM - cash
       
 ###COMBINED########33333333333333
+      convclass.f1 <- function(df){
+            N <- ncol(df)
+            if(length(N) == 0){
+            }else{
+                  for(i in 1:N){
+                        df[,i] <- as.character(df[,i])
+                  }
+                  g <- c("kPrice", "Units", "tDate", "mDate", "VL")
+                  for(h in g){
+                        df[,h] <- as.numeric(df[,h])
+                  }
+                  df
+            }
+      }
+      EXCfulltrandf <- convclass.f1(EXCfulltrandf)
+      OTCfulltrandf <- convclass.f1(OTCfulltrandf)
+      extrafulltrandf <- convclass.f1(extrafulltrandf)
       ufullfdf <- rbind(EXCfulltrandf, OTCfulltrandf, extrafulltrandf)
+      
+      
       uspecfdf <- spectrandf
 } #output: ufullfdf, uspecfdf
 
@@ -137,6 +156,8 @@ setwd(EXTRAraw2full.R_dir); source("03_EXTRA_raw_full.R")
       
 } #fdf8_td
 
+
+
 {
 ############################
 # A1_Report_prep_list
@@ -148,17 +169,19 @@ A1.dir <- "C:/Users/User/Google Drive/z_ALLHM"
 
 setwd(A1.dir); source("A1_01_Core.R") #get 10 list for report? - aggregate them! >write.csv //rmarkdown      
 
-tname <- "Alpha 1"
-temp <- lapply(1:1, FUN = function(i){
-      i <<- i
-      tname <- teamname12[i]; fname <- paste0(tname, "_Report_", yy+1)
-      tname <- tname #main parameter to Report.Rmd
-      # options(scipen=12)
-      rmarkdown::render(input = "Report.Rmd", output_format = "html_document", output_file = paste0(fname, ".html"), output_dir = out.report.dir)
-      
-})
+# tname <- "Alpha 1"
+# temp <- lapply(1:1, FUN = function(i){
+#       i <<- i
+#       tname <- teamname12[i]; fname <- paste0(tname, "_Report_", yy+1)
+#       tname <- tname #main parameter to Report.Rmd
+#       # options(scipen=12)
+#       rmarkdown::render(input = "Report.Rmd", output_format = "html_document", output_file = paste0(fname, ".html"), output_dir = out.report.dir)
+#       
+# })
 
 } #Report prep
+
+
 
 {
 ############################
@@ -169,14 +192,17 @@ temp <- lapply(1:1, FUN = function(i){
 out.report.dir <- "C:/Users/User/OneDrive/D_Distribute/R_report"
 
 setwd(A1.dir) #for Report.Rmd
-temp <- lapply(1:length(teamname12), FUN = function(i){
+# temp <- lapply(3, FUN = function(i){
+# temp <- lapply(1:length(teamname12), FUN = function(i){
+for(i in 8){
       i <<- i
-      tname <- teamname12[i]; fname <- paste0(tname, "_Report_", yy+1)
-      tname <- tname #main parameter to Report.Rmd
+      tname <<- teamname12[i]; fname <<- paste0(tname, "_Report_", yy+1)
+      tname <<- tname #main parameter to Report.Rmd
       
       rmarkdown::render(input = "Report.Rmd", output_format = "html_document", output_file = paste0(fname, ".html"), output_dir = out.report.dir)
 
-})
-
+# })
+}
+      
 } #REPORT: output 12 html report to R_Report, waiting to be distributed
 

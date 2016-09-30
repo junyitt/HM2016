@@ -128,9 +128,9 @@ ProTf <- function(FIC, cType, cff, Units, Pro, kPrice, tDate, mDate, ST, exST, y
             if(yy+1 == 3){
                   0
             }else if(yy+1 == 4){
-                  cff*units*dfmetabonde[uu, "Pro4"]*exST
+                  cff*Units*dfmetabonde[uu, "Pro4"]*exST
             }else if(yy+1 == 5){exST
-                  cff*units*dfmetabonde[uu, "Pro5"]*exST
+                  cff*Units*dfmetabonde[uu, "Pro5"]*exST
             }else{
                   0
             }
@@ -165,11 +165,11 @@ MVTf <- function(FIC, cType, cff, Units, Pro, kPrice, tDate, mDate, ST, exST, yy
       }else if(cType %in% bondmeta){
             uu <- dfmetabonde[,"FIC"] == FIC
             if(yy == 3){
-                  cff*units*dfmetabonde[uu, "Proceed"]*exST #unnecessary
+                  cff*Units*dfmetabonde[uu, "Proceed"]*exST #unnecessary
             }else if(yy == 4){
-                  cff*units*dfmetabonde[uu, "MV4"]*exST
+                  cff*Units*dfmetabonde[uu, "MV4"]*exST
             }else if(yy == 5){exST
-                  cff*units*dfmetabonde[uu, "MV5"]*exST
+                  cff*Units*dfmetabonde[uu, "MV5"]*exST
             }else{exST
                   0
             }

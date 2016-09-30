@@ -1,11 +1,12 @@
 
 #A1 Report - 01 - Core  
-core.f <- function(tName, df){
+core.f <- function(tName, df, yy){
       u <- df[,"TeamName"] %in% tName
       u2 <- df[,"classf"] %in% "Core"
       u3 <- grepl(pattern = "^Service", df[, "FIC"])
       u5 <- grepl(pattern = "^AFUT", df[,"cType"])
       u6 <- grepl(pattern = "^Production", df[,"cType"]) #CORE
+            u7 <- df[,"tDate"] %in% yy
       under1 <- c("GOL", "CRU", "PAL")
       
       
@@ -13,16 +14,17 @@ core.f <- function(tName, df){
             {      
                   u4 <- grepl(pattern = "Reduction", df[,"cType"]) #EXTRA
                   #core - cost -  prod
-                  coret <- df[u & u2 & u6, c("Underlying", "Units", "kPrice", "exST")]
+                  coret <- df[u & u2 & u6 & u7, c("Underlying", "Units", "kPrice", "exST")]
                   #extra - cost reduction
-                  ext <- df[u & u3 & u4, c("Underlying", "Units", "kPrice")]
+                  ext <- df[u & u3 & u4 & u7, c("Underlying", "Units", "kPrice")]
                   ##core - revenue - AFUT
-                  aft <- df[u & u2 & u5, c("Underlying", "Units", "ST", "exST")]
+                  aft <- df[u & u2 & u5 & u7, c("Underlying", "Units", "ST", "exST")]
                   
                   coret[,"costred"] <-  sapply(under1, FUN = function(j){
                         if(nrow(ext) > 0){
-                              if(ext[, "Underlying"] == j){
-                                    ext[,"kPrice"]     
+                              if(j %in% ext[, "Underlying"]){
+                                    uu11 <- ext[, "Underlying"] %in% j
+                                    ext[uu11,"kPrice"]     
                               }else{
                                     0
                               }
@@ -47,13 +49,14 @@ core.f <- function(tName, df){
       }else{
             u4 <- grepl(pattern = "Increment", df[,"cType"]) #EXTRA
             
-            revet <- df[u & u2 & u6, c("Underlying", "Units", "kPrice", "exST")] #core-production-gol2 (rev)
-            ext <- df[u & u3 & u4, c("Underlying", "Units", "kPrice")]  #extra-service-increment      (rev)
-            aft <- df[u & u2 & u5, c("Underlying", "Units", "ST", "exST")] #core-afut-buy (cost)
+            revet <- df[u & u2 & u6 & u7, c("Underlying", "Units", "kPrice", "exST")] #core-production-gol2 (rev)
+            ext <- df[u & u3 & u4 & u7, c("Underlying", "Units", "kPrice")]  #extra-service-increment      (rev)
+            aft <- df[u & u2 & u5 & u7, c("Underlying", "Units", "ST", "exST")] #core-afut-buy (cost)
             revet[,"revinc"] <-  sapply(under1, FUN = function(j){
                   if(nrow(ext) > 0){
-                        if(ext[, "Underlying"] == j){
-                              ext[,"kPrice"]     
+                        if(j %in% ext[, "Underlying"]){
+                              uu11 <- ext[, "Underlying"] %in% j
+                              ext[uu11,"kPrice"]        
                         }else{
                               0
                         }
@@ -105,7 +108,7 @@ extraR.f <- function(tName, df, yy){
                     "pos1", "Units", "tDate", "mDate", "NetPro", "ProT", "MVT", "VL")
       
       u <- df[,"TeamName"] %in% tName
-      u1 <- df[, "classf"] %in% "Extra"
+      u1 <- df[, "classf"] %in% "Extra" & df[, "cType"] %in% c("Employ Service", "Bond-E")
       yy2 <- yy+1; u2 <- df[, "tDate"] < yy2 & yy2 <= df[,"mDate"]
       
       #outdf: 
@@ -203,7 +206,7 @@ newbs.df.f <- function(balsh_y, fdf8_td , teamname12, fdf_y7){
 #A1 Report - 07 - Hedging Evaluation
 subdfR.f <- function(df, v1, v2, v3, tName, yy){ #input df, criteria vector 1-v1 , criteria vector 2-v2, & v3 for classf output relevant df
       u1 <- match(df[,"Underlying"], v1, nomatch = 0) > 0 ##df[,"Underlying"] %in% v1
-      u2 <- df[,"Underlying"] %in% v2
+      u2 <- df[,"Currency"] %in% v2
       u3 <- df[,"classf"] %in% v3 ; u4 <- df[,"TeamName"] %in% tName; u5 <- df[,"tDate"] < yy+1 &  df[,"mDate"] >= yy+1
       df[(u1 | u2) & (u3 & u4 & u5),]
 } #return subdf
@@ -262,7 +265,7 @@ scoreH.f <- function(P.type.h, P.type.t, sumq = T){
                         out <- c(s1,s2,s3)
                   }
 
-            if(nouser){
+            if(nouser & notran){
                   out*0.5
             }else if(notran){
                   out - 3     
@@ -313,21 +316,22 @@ scoreH2.f <- function(P.type.h, P.type.t){
 #Criteria 3: Pm + k*M = Px, k = [a,b] a>0; a*M < Px - Pm <= b*M, where M = slope
 scoreH3.f <- function(P.type.h, P.type.t){
       Pm <- abs(min(P.type.t)); Px <- abs(min(P.type.h))
+      DP <- abs(Pm - Px)
       loc <- grep(Px, P.type.h); if(sum(loc > 30) > 2){u <- length(loc)}else{u <- 1} #get the location of the worst case for unhedged
       d <- movingdiff.f(P.type.h); M <- abs(d[loc[u]]) #get the slope, M
       
       if(sd(P.type.h) == 0 & sd(P.type.t)==0){
             2
       }else{
-            if(Px-Pm > 15*M){
+            if(DP > 15*M){
                   2
-            }else if(Px-Pm > 10*M & Px-Pm <= 15*M){
+            }else if(DP > 10*M & DP <= 15*M){
                   1.5
-            }else if(Px-Pm > 5*M & Px-Pm <= 10*M){
+            }else if(DP > 5*M & DP <= 10*M){
                   1
-            }else if(Px-Pm > 0*M & Px-Pm <= 5*M){
+            }else if(DP > 0*M & DP <= 5*M){
                   0.5
-            }else if(Px-Pm <= 0*M){
+            }else if(DP <= 0*M){
                   0  
             }
       }

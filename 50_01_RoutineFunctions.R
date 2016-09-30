@@ -15,6 +15,8 @@ addsc_ftran_f <- function(metadf, yy){
       }#fullvar1, varadd1
       colnames(metadf) <- varadd1
       u <- metadf[, "tDate"] == yy; add1df <- metadf[u,] #select only the particular year scenario transactions
+if(sum(u) == 0){
+}else{
       df12_list <- lapply(1:6, FUN = function(i){
             dft1 <- add1df
             dft1[,"TeamName"] <- paste0(add1df[,"TeamName"], " ", i)
@@ -25,7 +27,7 @@ addsc_ftran_f <- function(metadf, yy){
       
       #output fullscenariotrandf 
       data.frame(add2df, tKey, Remarks, VL, VLRemarks)      
-      
+}      
 }
 
 

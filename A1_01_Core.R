@@ -16,7 +16,7 @@
 
 #output c_list
 cReport_list <- lapply(teamname12, FUN = function(x){ #return list of core report, where list[[1]] is the core report df for team Alpha 1 and so on
-      core.f(x, fdf8_td)
+      core.f(x, fdf8_td, yy)
 }) 
       
 } #cReport_list
@@ -198,7 +198,7 @@ score_hedge_byteam <- sapply(teamname12, FUN = function(j){
                               score
                         }) #return list of scores, list by commoditiesclass
                         
-                        sum(scorebycomm_v)
+                        sum(scorebycomm_v)/12.5*20
                   })
       
   
@@ -221,16 +221,16 @@ score_hedge_byteam <- sapply(teamname12, FUN = function(j){
                               if(sum(u2)==0){
                                     0
                               }else{
-                                    metascore0_df[u2, "Score"] #return the respective score
+                                    metascore0_df[u2, "Score"]*3 #return the respective score
                               }
                         })
       }else if(yy == 4){
             score.extra <- sapply(teamname12, FUN = function(j){
-                  u <- fdf8_td[,"cParty"] == "Harry M."; u2 <- fdf8_td[, "TeamName"] == j
+                  u <- fdf8_td[,"cParty"] %in% "Harry M."; u2 <- fdf8_td[, "TeamName"]  %in% j
                   if(sum(u & u2) == 0){
                         0
                   }else{
-                        fdf8_td[u & u2, "VLRemarks"]
+                        as.numeric(fdf8_td[u & u2, "VLRemarks"])
                   }
             })
       }else{
@@ -252,7 +252,9 @@ score_hedge_byteam <- sapply(teamname12, FUN = function(j){
 {
       if(yy == 4){
             nav_v <- balsh_new_yy2[,"NAV"]
-            score.NAV <- rank(nav_v)/12*5
+            score.NAV1 <- rank(nav_v[1:6])/6*25 #not reproducible with different team numbers
+            score.NAV2 <- rank(nav_v[7:12])/6*25
+            score.NAV <- c(score.NAV1, score.NAV2)
       }else{
             score.NAV <- rep(0, 12)     
       }
@@ -291,16 +293,21 @@ score_hedge_byteam <- sapply(teamname12, FUN = function(j){
                                           u <- score.tddf[,"TeamName"] == j; sections <- colnames(score.tddf)[2:5]
                                           N <- sum(u)
                                           df <- data.frame("Section" = sections)
-                                          for(yr in 1:N){
-                                                stringyr <- as.character(yr)
-                                                u2 <- score.tddf[, "Year"] == yr
-                                                df[,stringyr] <- sapply(sections, FUN = function(x){
-                                                      score.tddf[u & u2, x]  #out: score for team j, year = yr, sections = x                       
-                                                })
+                                          for(yr in 1:(yy+1)){
+                                                # stringyr <- as.character(yr)
+                                                u2 <- score.tddf[, "Year"] %in% yr
+                                                yr_c <- as.character(yr)
+                                                for(kk in 1:4){
+                                                      ss <- sections[kk]
+                                                      df[kk, yr_c] <- score.tddf[u & u2, ss]
+                                                }
+                                                # df[,stringyr] <- sapply(sections, FUN = function(x){
+                                                #       score.tddf[u & u2, x]  #out: score for team j, year = yr, sections = x                       
+                                                # })
                                           }
                                           
                                           df[, "Average"] <- sapply(X=1:nrow(df), FUN = function(m){
-                                                                  mean(df[m, 2:(N+1)])
+                                                                  mean(as.numeric(df[m, 2:(yy+2)]))
                                                             })
                                           
                                           df #output: displayed form scoredf

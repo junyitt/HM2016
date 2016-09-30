@@ -6,7 +6,7 @@ source("createcontracts2.R")
 ##OPTIONS##
       optdf <- read.csv("option.csv")
       
-      sub <- c("CRU", "GOL", "PAL", "CRU", "PAL")
+      sub <- c("CRU", "PAL", "PAL", "CRU", "PAL")
       
       temp <- list(); temp2 <- list()
       #subset required raw asset at the particular year
@@ -27,7 +27,7 @@ source("createcontracts2.R")
             temp2[,1] <- paste0(op, styr, edyr, temp2[, "Underlying"], temp2[,"K"])
       
       #writecsv
-            write.csv(temp2, "finalopt.csv", row.names = F)
+            write.csv(temp2, "finalopt3.csv", row.names = F)
             
             
 ##FORWARD##
