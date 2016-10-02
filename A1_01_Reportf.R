@@ -231,25 +231,25 @@ sumprov.vary.f <- function(df, step, yy, ss0, exss0, varyund = T){
                   dfcalc <- df; cff <- sapply(1:nrow(dfcalc), FUN = function(j){cff_f(dfcalc[j,"cType"], dfcalc[j,"pos1"])})
                   
                   proTv1 <- sapply(1:nrow(dfcalc), FUN = function(i){ #return a vector containing proT of dfcalc, later sum it to get 'portfolio proT'
-                                    { 
-                                          FIC <- dfcalc[i,"FIC"]
-                                          cType <- dfcalc[i,"cType"]
-                                          cff1 <- cff[i]
-                                          Units <- dfcalc[i,"Units"]
-                                          Pro <- dfcalc[i,"Pro"]
-                                          kPrice <- dfcalc[i,"kPrice"]
-                                          tDate <-  dfcalc[i,"tDate"]; mDate <-  dfcalc[i,"mDate"]
-                                    } #assign FIC, cType, cff1 etc.
-                                    if(varyund){
-                                          pros0 <- ProTf(FIC, cType, cff1, Units, Pro, kPrice, tDate, mDate, ss0*r, exss0, yy)
-                                    }else{
-                                          pros0 <- ProTf(FIC, cType, cff1, Units, Pro, kPrice, tDate, mDate, ss0, exss0*r, yy)
-                                    }
-                                    if(!is.numeric(pros0)){0}else{pros0}
-                                    
-                              })
+                        { 
+                              FIC <- dfcalc[i,"FIC"]
+                              cType <- dfcalc[i,"cType"]
+                              cff1 <- cff[i]
+                              Units <- dfcalc[i,"Units"]
+                              Pro <- dfcalc[i,"Pro"]
+                              kPrice <- dfcalc[i,"kPrice"]
+                              tDate <-  dfcalc[i,"tDate"]; mDate <-  dfcalc[i,"mDate"]
+                        } #assign FIC, cType, cff1 etc.
+                        if(varyund){
+                              pros0 <- ProTf(FIC, cType, cff1, Units, Pro, kPrice, tDate, mDate, ss0*r, exss0, yy)
+                        }else{
+                              pros0 <- ProTf(FIC, cType, cff1, Units, Pro, kPrice, tDate, mDate, ss0, exss0*r, yy)
+                        }
+                        if(!is.numeric(pros0)){0}else{pros0}
+                        
+                  })
                   portfolioproT <- sum(proTv1, na.rm = T); portfolioproT
-            
+                  
             })
       }
 } #vary underlying price #input a subset fulltran df, and step, output: sum of proceed for each step case

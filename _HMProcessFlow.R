@@ -194,7 +194,10 @@ out.report.dir <- "C:/Users/User/OneDrive/D_Distribute/R_report"
 setwd(A1.dir) #for Report.Rmd
 # temp <- lapply(3, FUN = function(i){
 # temp <- lapply(1:length(teamname12), FUN = function(i){
-for(i in 8){
+
+
+loop <- 1:12
+for(i in loop){
       i <<- i
       tname <<- teamname12[i]; fname <<- paste0(tname, "_Report_", yy+1)
       tname <<- tname #main parameter to Report.Rmd

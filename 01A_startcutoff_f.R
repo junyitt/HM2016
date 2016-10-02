@@ -7,12 +7,12 @@ startcutoff.f <- function(rawdf){
       if(length(u1) == 0 & length(u2) == 0){
                   rawdf
       }else if(length(u1) == 0 & length(u2) > 0){
-                  ua1 <- 1
-                  ua2 <- max(u2) 
+                  ua1 <- 1+1
+                  ua2 <- max(u2)-1 
                   rawdf[(ua1:ua2),]
       }else if(length(u1) > 0 & length(u2) == 0){
                   ua1 <- max(u1)+1
-                  ua2 <- nrow(rawdf)
+                  ua2 <- nrow(rawdf)-1
                   if(ua2 < ua1){
                         rawdf[F,]          
                   }else{
@@ -20,7 +20,7 @@ startcutoff.f <- function(rawdf){
                   }
       }else{
                   ua1 <- max(u1)+1
-                  ua2 <- max(u2) 
+                  ua2 <- max(u2)-1
                   rawdf[(ua1:ua2),]
       }
             

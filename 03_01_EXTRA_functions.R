@@ -38,7 +38,7 @@
 
 ########YR 0,1 - PV     #must be unique teamname? one only!
       conv1extra_f <- function(EXTRArawdf, tkeydf){
-            EXTRArawdf <- subcutdf_f(EXTRArawdf) 
+            EXTRArawdf<- subcutdf_f(EXTRArawdf)
             edf <- EXTRArawdf
             N <- nrow(edf)
             colnames(edf) <- c("ExtraName", "tDate", "Service", "tName", "tKey", "Remarks")

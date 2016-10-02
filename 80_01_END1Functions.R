@@ -102,7 +102,13 @@ ProTf <- function(FIC, cType, cff, Units, Pro, kPrice, tDate, mDate, ST, exST, y
       }else if(cType %in% m2){
             if(mm){-1*cff*Units}else{0}
       }else if(cType %in% m3){
-            if(mm){cff*Units*exST*ST}else{0}
+            if(mm){
+                  if(!is.na(kPrice)){
+                        cff*Units*exST*kPrice
+                  }else{
+                        cff*Units*exST*ST
+                  }
+            }else{0}
       }else if(cType %in% m4){
             if(mm){cff*Units*exST*(ST-kPrice)}else{0}
       }else if(cType %in% m5){
