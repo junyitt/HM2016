@@ -1,28 +1,37 @@
 
 #####OTC FUNCTIONS
+#import OTC-EXC-TRAN
+importrawOTC.f <- function(raw_OTC.dir, yy){
+      setwd(raw_OTC.dir)
+      OTCrawdf <- as.data.frame(read_excel(paste0("OTC_", yy, ".xlsx")))
+      OTCrawdf <- cutoff.f(OTCrawdf)   
+      OTCrawdf
+}
 
+##########################################################
 #NUMBER ONE PRIORITY, DUPLICATE FIRST and FIX POSITION
+###########################################################
 
 ##DUPLICATE: Main: DUPf
-duplicate_f <- function(rawdf){
+duplicate.f <- function(rawdf){
       colnames(rawdf) <- c("cType", "Team1", "Team2", "posTeam1",
                            "Underlying", "kPrice", "Units", "tDate",
                            "mDate", "Remarks")
       rawdf2 <- rawdf
       rawdf2[,"Team1"] <- rawdf[, "Team2"]  #flip team 1 and team 2 
       rawdf2[,"Team2"] <- rawdf[, "Team1"]
-      rawdf2[,"posTeam1"] <- sapply(rawdf[,"posTeam1"], FUN = function(j){flippos_f(j)})
+      rawdf2[,"posTeam1"] <- sapply(rawdf[,"posTeam1"], FUN = function(j){flippos.f(j)})
       rawdf0 <- rbind(rawdf, rawdf2)
             #FIX
             rawdf0[, "Units"] <- round(rawdf0[, "Units"],0) #round
-            rawdf0[,"posTeam1"] <- sapply(1:nrow(rawdf0), FUN = function(j){posfix_f(rawdf0[j,"cType"], rawdf0[j, "posTeam1"])}) #fix position
-            rawdf0[,"Underlying"] <- sapply(1:nrow(rawdf0), FUN = function(j){loanNAfix_f(rawdf0[j,"cType"], rawdf0[j,"Underlying"])}) #fix underlying NA for loan
+            rawdf0[,"posTeam1"] <- sapply(1:nrow(rawdf0), FUN = function(j){posfix.f(rawdf0[j,"cType"], rawdf0[j, "posTeam1"])}) #fix position
+            rawdf0[,"Underlying"] <- sapply(1:nrow(rawdf0), FUN = function(j){loanNAfix.f(rawdf0[j,"cType"], rawdf0[j,"Underlying"])}) #fix underlying NA for loan
                   #output, duplicated and fixed df
                   rawdf0
 }
 
 #DUPf: flip Long to Short, Lend to Borrow and vice versa
-      flippos_f <- function(pos1){
+      flippos.f <- function(pos1){
       p1 <- c("Long", "Short"); p2 <- c("Lend", "Borrow")
       if(pos1 %in% p1){
             uu <- !(pos1 == p1)
@@ -34,7 +43,7 @@ duplicate_f <- function(rawdf){
 }
       
 #DUPf: FIX Long and Short to Borrow and Lend for loan and forward
-      posfix_f <- function(cType, pos){
+      posfix.f <- function(cType, pos){
             p1 <- c("Long", "Short"); p2 <- c("Lend", "Borrow")
             if(cType %in% "Forward"){
                   if(pos %in% p2){
@@ -48,7 +57,7 @@ duplicate_f <- function(rawdf){
       }
 
 #DUPf: loanunderlying -> chg to NA
-      loanNAfix_f <- function(cType, Underlying){
+      loanNAfix.f <- function(cType, Underlying){
       if(cType %in% "Loan"){
             NA
       }else{
@@ -58,8 +67,8 @@ duplicate_f <- function(rawdf){
       
 #############################################################################
 #CONVf: add currrency
-      curr_f <- function(Underlying){
-            if(Underlying %in% "GOL"){
+      addcurr.f <- function(Underlying.c){
+            if(Underlying.c %in% "GOL"){
                   "USD"     
             }else{
                   "MYR"
@@ -67,136 +76,80 @@ duplicate_f <- function(rawdf){
       }
       
 #CONVf: VL      
-      VLOTCf <- function(cType, Underlying, kPrice, tDate, mDate, yy){
+      VLandVLR.OTC.v2.f <- function(cType.c, Underlying.c, kPrice.c, Units.c, tDate.c, mDate.c, yy, meta.und.price.df){
+            ss0 <- und.price.f(Underlying.c, yy, meta.und.price.df)
+            if(Underlying.c %in% "GOL"){exss0 <- und.price.f("USD", yy, meta.und.price.df)}else{exss0 <- 1}
+            
             #1) no underlying for Forward - ignore for loan
-            if(cType == "Forward" & !Underlying %in% c("GOL", "CRU", "PAL", "USD", "EUR")){
-                  0
-                  #2) kPrice boundary
-            }else if(cType == "Loan" & !(kPrice >= 0.01 & kPrice <= 0.15)){
-                  0
-            }else if(Underlying %in% "GOL" & !(kPrice >= 500 & kPrice <= 2000)){
-                  0
-            }else if(Underlying %in% "CRU" & !(kPrice >= 100 & kPrice <= 400)){
-                  0
-            }else if(Underlying %in% "PAL" & !(kPrice >= 1000 & kPrice <= 3000)){
-                  0
-            }else if(Underlying %in% "USD" & !(kPrice >= 2.5 & kPrice <= 5.0)){
-                  0
-            }else if(Underlying %in% "EUR" & !(kPrice >= 3.0 & kPrice <= 6.0)){
-                  0
-                  #3) tDate, mDate boundary
-            }else if(tDate >= mDate | !(tDate >= 0 & tDate <= 4) | !(mDate >= 1 & mDate <= 5)){
-                  0
-                  #4) tDate not during yy
-            }else if(!(tDate == yy)){
-                  0
-            }else{
-                  1
-            }
-            
-            #FORCED#3) remarks? -"CONFIRM"
-            # -GOL [500,2000]
-            # -CRU [100, 400]
-            # -PAL [1000,3000]
-            # -USD [2.5, 5.0]
-            # -EUR [3.0, 6.0]
-            # -interest rate on loan [1%, 15%]
-      }
-
-#CONVf: VLRemarks
-      VLROTCf <- function(cType, Underlying, kPrice, tDate, mDate, yy){
-            p <- vector(); p <- rep(F,4)
-            if(cType == "Forward" & !Underlying %in% c("GOL", "CRU", "PAL", "USD", "EUR")){
-                  p[1] <- TRUE
+            if(cType.c %in% "Forward" & !Underlying.c %in% c("GOL", "CRU", "PAL", "USD", "EUR")){ 
+                  c(0, "No Underlying specified for Forward")
+                  print("WARNING: NA for Forward Underlying")
                   
+            #2) Loan min/max interest rate
+            }else if(cType.c %in% "Loan" & !(kPrice.c >= 0.01 & kPrice.c <= 0.15)){
+                  c(0, "Interest rate not in [1%, 15%] interval")
+
+            #3) Negative units  
+            }else if(Units.c < 0){
+                  c(0, "Negative number of units")
+                  print("WARNING: Negative number of units")
+                  
+            #4) negative kPrice  
+            }else if(Units.c < 0){
+                  c(0, "Negative kPrice")
+                  print("WARNING: Negative kPrice")
+                  
+            #5) Notional Value boundary        
+            }else if(cType.c %in% "Forward" & Underlying.c %in% c("GOL", "CRU", "PAL", "USD", "EUR") & Units.c*ss0*exss0 > 1e7){
+                  c(0, "Notional value (FWD) exceed RM 10 million")
+                  
+            }else if(cType.c %in% "Loan" & Units.c > 1e7){
+                  c(0, "Notional value (Loan) exceed RM 10 million")
+                  
+            #6) tDate, mDate boundary
+            }else if(    tDate.c >= mDate.c | !(tDate.c >= 0 & tDate.c <= 4) | !(mDate.c >= 1 & mDate.c <= 5) | !(tDate.c == yy)    ){
+                  c(0, "tDate and mDate is wrong")
+                  print("WARNING: tDate and mDate is wrong")
+                  
+            }else{
+                  c(1, "OTC: OK")
             }
-            
-            if(cType == "Loan" & !(kPrice >= 0.01 & kPrice <= 0.15)){
-                  p[2] <- TRUE
-            }else if(Underlying %in% "GOL" & !(kPrice >= 500 & kPrice <= 2000)){
-                  p[2] <- TRUE
-            }else if(Underlying %in% "CRU" & !(kPrice >= 100 & kPrice <= 400)){
-                  p[2] <- TRUE
-            }else if(Underlying %in% "PAL" & !(kPrice >= 1000 & kPrice <= 3000)){
-                  p[2] <- TRUE
-            }else if(Underlying %in% "USD" & !(kPrice >= 2.5 & kPrice <= 5.0)){
-                  p[2] <- TRUE
-            }else if(Underlying %in% "EUR" & !(kPrice >= 3.0 & kPrice <= 6.0)){
-                  p[2] <- TRUE
-            }
-            
-            if(tDate >= mDate | !(tDate >= 0 & tDate <= 4) | !(mDate >= 1 & mDate <= 5)){
-                  p[3] <- TRUE
-            }
-            
-            if(!(tDate == yy)){
-                  p[4] <- TRUE
-            }
-            
-            
-            emsg <- c("Invalid Underlying for Forward", "Invalid kPrice", "Invalid tDate/mDate", "tDate <> currentyr")
-            paste(emsg[p], sep="", collapse="--") 
+      
       }
 
 ##CONV-TO-FULL-TRAN-DF: Main: CONVf
-OTCfullconv_f <- function(dupdf){
+OTCfullconv.f <- function(dupdf, meta.und.price.df){
       #FULL-TRAN required variables list
-      fullvar1 <- c("TrackNo", "classf", "FIC", "rClass", "sClass", "TeamName", "cParty", 
-                    "cType", "Underlying", "Currency", "kPrice", 
-                    "pos1", "Units", "tDate", "mDate", "tKey", "Remarks",
-                    "VL", "VLRemarks")
-      
-      #create empty vector for fullvar1
-      for(i in 1:length(fullvar1)){assign(fullvar1[i], value = vector())}  
-      N <- nrow(dupdf)
-      colnames(dupdf) <- c("cType", "Team1", "Team2", "posTeam1",
-                          "Underlying", "kPrice", "Units", "tDate",
-                          "mDate", "Remarks")
-      
+      fullvar1 <- fullvar.f()
+            N <- nrow(dupdf)
+            colnames(dupdf) <- c("cType", "Team1", "Team2", "posTeam1",
+                                "Underlying", "kPrice", "Units", "tDate",
+                                "mDate", "Remarks")
+            
       #EACH VARIABLES - treatment
-      TrackNo <- rep(1, N)
+      TrackNo <- rep(NA, N)
       classf <- rep("OTC", N)
       FIC <- rep(NA, N)
-      rClass <- rep(NA, N) #######TO BE DETERMINED #####!!!!!!!!!!!!
-      sClass <- rep(NA,N) #######TO BE DETERMINED #####!!!!!!!!!!!!
       TeamName <- dupdf[,"Team1"]
       cParty <- dupdf[,"Team2"]
             cType <- dupdf[,"cType"]
             Underlying <- dupdf[,"Underlying"]
-            Currency <- sapply(X = Underlying, FUN = function(x){curr_f(x)})   
+            Currency <- sapply(X = Underlying, FUN = function(Underlying.c){   addcurr.f(Underlying.c)    })   
             kPrice <- dupdf[,"kPrice"]
-                  pos1 <- dupdf[, "posTeam1"]
-                  Units <- dupdf[, "Units"]
-                  tDate <- dupdf[, "tDate"]
-                  mDate <- dupdf[, "mDate"]
-                  tKey <- rep(NA, N)
-                  Remarks <- dupdf[,"Remarks"]
-                        VL <-  sapply(X=1:N, function(j){VLOTCf(cType[j], Underlying[j], kPrice[j], tDate[j], mDate[j],yy)}) 
-                        VLRemarks <- sapply(X=1:N, function(j){VLROTCf(cType[j], Underlying[j], kPrice[j], tDate[j], mDate[j],yy)}) 
-      
-      #output fulldf
-      data.frame(TrackNo, classf, FIC, rClass, sClass, TeamName, cParty, 
-            cType, Underlying, Currency, kPrice, 
-            pos1, Units, tDate, mDate, tKey, Remarks,
-            VL, VLRemarks)
-}
+      pos1 <- dupdf[, "posTeam1"]
+      cff <- sapply(X = 1:N, FUN = function(j){ cff.f(cType.c = cType[j], pos1.c = pos1[j])   })   
+      Units <- round(dupdf[, "Units"],0)
+            tDate <- dupdf[, "tDate"]
+            mDate <- dupdf[, "mDate"]
+            tKey <- rep(NA, N)
+      Remarks <- dupdf[,"Remarks"]
+      VL <-  sapply(X=1:N, function(j){   v2 <-  VLandVLR.OTC.v2.f(cType[j], Underlying[j], kPrice[j], Units[j], tDate[j], mDate[j], yy, meta.und.price.df); v2[1]     }) 
+      VLRemarks <- sapply(X=1:N, function(j){   v2 <-  VLandVLR.OTC.v2.f(cType[j], Underlying[j], kPrice[j], Units[j], tDate[j], mDate[j], yy, meta.und.price.df); v2[2]     })  
 
-#general, duplicate: TRACKNO function
-trackno_f <- function(fulltrandf){
-      trackv <- rep(1, nrow(fulltrandf))
-      yearuni <- as.integer(unique(fulltrandf[,"tDate"]))
-      classfuni <- unique(fulltrandf[,"classf"])
-      for(yrr in yearuni){
-            for(clf in classfuni){
-                  Y <- fulltrandf[,"tDate"] == yrr; Z <- fulltrandf[,"classf"] == clf
-                  nt <- length(trackv[Y & Z])
-                  start <- yrr+100; mid <- substr(clf, 1,3)
-                  trackv[Y & Z] <- sapply(1:nt, FUN = function(j){
-                        paste0(start, mid, (1000+j))      
-                  })
-            }
-      }
-      #output: track number vector
-      trackv
-      
+      #output fulldf
+      data.frame(TrackNo, classf, FIC, TeamName, cParty, 
+            cType, Underlying, Currency, kPrice, 
+            pos1, cff, Units, 
+            tDate, mDate, tKey, 
+            Remarks, VL, VLRemarks, stringsAsFactors = F)
 }

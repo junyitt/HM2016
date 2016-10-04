@@ -1,43 +1,26 @@
-#DIR-f
-end8f.dir <- "C:/Users/User/Google Drive/z_ALLHM"
+#DIR required
+#maincode.dir, meta.dir
 
-#source functions
-setwd(end8f.dir); source("80_01_END1Functions.R")
+#FUNCTIONs (general) required
+#importmeta.f
 
+      #MAIN INPUT:
+      #bgn2.td.df
 
-#META_DIR
-wd_metaunderlyingprice <- "C:/Users/User/Google Drive/z_ALLHM/v5.0_7_Instruments"
+      #ENVIRONMENT OUTPUT:
+      #
+
+#Internal FUNCTION #bgn0.f, pro0.f, tfee.f
+setwd(maincode.dir); source("80_01_END1Functions.R")
+
+###############################################################################
 
 #META-underlyingprice, metaficA, metabond-e
-setwd(wd_metaunderlyingprice)
-      dfmetaunderprice <- as.data.frame(read_excel("meta-underlyingprice.xlsx"))
-      dfmetafic <- as.data.frame(read_excel("meta-FIC-A.xlsx"))
-      dfmetabonde <- as.data.frame(read_excel("meta-bond-e-B.xlsx"))  
+meta.undprice.df <- importmeta.f(meta.dir, fname = "meta-underlyingprice.xlsx")
+meta.fic.df <- importmeta.f(meta.dir, fname = "meta-FIC.xlsx")
+meta.bonde.df <- importmeta.f(meta.dir, fname = "meta-bond-e-B.xlsx")
 
-{
-      #DIR-zfdf
-      fdf_csvdir <- "C:/Users/User/OneDrive/yy_YearlyFullTran"
-      setwd(fdf_csvdir); zfdf.files <- list.files(pattern = "^zfdf")
-      
-      #list.files and import all fdf -> fdf_td (td = to date).
-      zfdf.list <- lapply(zfdf.files, FUN = function(x){
-            read.csv(x)
-      })
-      fdf_td <- do.call(rbind, zfdf.list)
-      
-      #fix fdf_td (variable class)
-      {
-            fdf_td[] <- lapply(fdf_td, as.character)
-            suppressWarnings({
-                  col <- c("kPrice", "Units", "tDate", "mDate", "VL", "S0", "exS0", "Pro", "Tfee", "NetPro")
-                  fdf_td[,col] <- sapply(col, FUN = function(j){as.numeric(fdf_td[,j])})
-                  
-            }) #as.numeric numeric columns
-      } 
-      
-}#output: fdf_td
-
-#final ST df
-fdf8_td <- fdf8_f(fdf_td, yy) #use yy, function inside 'chg' to yy + 1 or cater for yy
-
+#add final 4 columns >> total 27 columns
+end3.td.df <- end3.td.df.f(bgn2.td.df, meta.undprice.df, meta.bonde.df, yy) #use yy, function inside 'chg' to yy + 1 or cater for yy
+#output: end3.td.df
 

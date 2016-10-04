@@ -1,37 +1,28 @@
 #02_OTC_raw_full.R
 
-#############
-startcut.f.dir <- "C:/Users/User/Google Drive/z_ALLHM/"
-setwd(startcut.f.dir); source("01A_startcutoff_f.R")
-########
+#DIR Required
+#raw_OTC.dir, maincode.dir, meta.dir;; yy
 
+#FUNCTION (general) Required
+#cutoff.f, importmeta.f
 
-#DIR
-OTCrawdir <- "C:/Users/User/OneDrive/1_Form_OTC"
-if(real_run == T){OTCrawdir<-gsub("1", "f", OTCrawdir)}else{}
+      #ENVIRONMENT OUTPUT:
+      #preOTCraw.df, OTCraw.df, meta.und.price.df, OTCfulltran.df
 
-
-OTCfdir <- "C:/Users/User/Google Drive/z_ALLHM/"
-
-#FUNCTION
-setwd(OTCfdir)
-source("02_01_OTC_functions.R")
+#Internal FUNCTION
+setwd(maincode.dir)
+source("02_01_OTC_functions.R")  #importrawOTC.f ##duplicate.f, flippos.f, posfix.f, loanNAfix.f  #OTCfullconv.f ##VLandVLR.OTC.v2.f, addcurr.f
 
 #####SECTION OTC-to-FULL-1#####
 
-#set yy
-# yy <- 0
-# yy <- 0
+#Import RAW-OTC-TRAN
+preOTCraw.df <- importrawOTC.f(raw_OTC.dir, yy)
+OTCraw.df <- duplicate.f(preOTCraw.df)   #duplicate and fix df
 
-#RAW-OTC-TRAN
-setwd(OTCrawdir)
-OTCrawdf <- as.data.frame(read_excel(paste0("OTC_", yy, ".xlsx")))
-OTCrawdf <- startcutoff.f(OTCrawdf) ##Added startjan
-
-      #duplicate and fix df
-      dupotcrawdf <- duplicate_f(OTCrawdf)
-            #final full-tran-OTC df
-            OTCfulltrandf <- OTCfullconv_f(dupotcrawdf)
-                  #add track no
-                  OTCfulltrandf[,"TrackNo"] <- trackno_f(OTCfulltrandf)
-                  
+#Import meta.und.price.df
+meta.und.price.df <- importmeta.f(meta.dir, "meta-underlyingprice.xlsx")
+      
+##final full-tran-OTC df
+OTCfulltran.df <- OTCfullconv.f(OTCraw.df, meta.und.price.df)
+     
+            

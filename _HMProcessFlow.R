@@ -1,211 +1,129 @@
-source("C:/Users/User/Google Drive/r_Rfunction/_myCode.R")
-library(reshape2); library(knitr) #install.packages(rmarkdown);
-library(ggplot2); library(gridExtra); require(cowplot)
+#Section 4 to 8 (fdf)   
+#LINE 9  #LINE 43  #LINE 84  #LINE 95  #LINE 116
 
-#set year to "collect" data from, i.e. EXC_0 >> yy <- 0
-# yy <- 0
-
-#Section 4 to 8 (fdf) 
-{
+#NEXT: FIX 6_Routine and others... use read_excel and write_excel
       
 ############################
 # 4_ConvUser
 ############################
 {
-EXCraw2full.R_dir <- "C:/Users/User/Google Drive/z_ALLHM"
-OTCraw2full.R_dir <- "C:/Users/User/Google Drive/z_ALLHM"
-EXTRAraw2full.R_dir <- "C:/Users/User/Google Drive/z_ALLHM"
 
 ##EXCHANGE
-setwd(EXCraw2full.R_dir); source("01_EXC_raw_full.R")
-      #output: 
-      head(EXCfulltrandf)
-
+setwd(maincode.dir); 
+source("01_EXC_raw_full.R") #EXCraw.df, ficmeta.df, tkey.df  #EXCfulltran.df
+      
 ##OTC
-setwd(OTCraw2full.R_dir); source("02_OTC_raw_full.R")
-      #output: 
-      head(OTCfulltrandf)
+setwd(maincode.dir); 
+source("02_OTC_raw_full.R") #preOTCraw.df, OTCraw.df, meta.und.price.df, #OTCfulltran.df
       
 ##EXTRA -> SPECIAL links to META-FULL
-setwd(EXTRAraw2full.R_dir); source("03_EXTRA_raw_full.R")
-      #output:
-      head(spectrandf)  #yr0, yr1 PV
-      head(extrafulltrandf) #yr2 arbitrage, yr3 bond, yr4 harryM - cash
-      
-###COMBINED########33333333333333
-      convclass.f1 <- function(df){
-            N <- ncol(df)
-            if(length(N) == 0){
-            }else{
-                  for(i in 1:N){
-                        df[,i] <- as.character(df[,i])
-                  }
-                  g <- c("kPrice", "Units", "tDate", "mDate", "VL")
-                  for(h in g){
-                        df[,h] <- as.numeric(df[,h])
-                  }
-                  df
-            }
-      }
-      EXCfulltrandf <- convclass.f1(EXCfulltrandf)
-      OTCfulltrandf <- convclass.f1(OTCfulltrandf)
-      extrafulltrandf <- convclass.f1(extrafulltrandf)
-      ufullfdf <- rbind(EXCfulltrandf, OTCfulltrandf, extrafulltrandf)
-      
-      
-      uspecfdf <- spectrandf
-} #output: ufullfdf, uspecfdf
+setwd(maincode.dir); 
+source("03_EXTRA_raw_full.R")  #spectran.df, extrafulltran.df
+
+###COMBINE into full-user-df###
+EXCfulltran.df <- convclass.f1(EXCfulltran.df)
+OTCfulltran.df <- convclass.f1(OTCfulltran.df)
+extrafulltran.df <- convclass.f1(extrafulltran.df)
+      ufull.yy.df <- rbind(EXCfulltran.df, OTCfulltran.df, extrafulltran.df)
+      uspec.yy.df <- spectran.df
+
 
       ############################
       # 4_ConvUser -- backup files, move files
       ############################
-      {
-            fulldf_csvdir <- "C:/Users/User/OneDrive/yy_YearlyFullTran"; b_fulldf_csvdir <- "C:/Users/User/OneDrive/yy_b_YearlyFullTran"
-            setwd(fulldf_csvdir); write.csv(ufullfdf, paste0("ufullfdf_", yy, ".csv"), row.names = F); write.csv(uspecfdf, paste0("uspecfdf_", yy, ".csv"), row.names = F)
-            setwd(b_fulldf_csvdir); write.csv(ufullfdf, paste0("b_ufullfdf_", yy, ".csv"), row.names = F); write.csv(uspecfdf, paste0("b_uspecfdf_", yy, ".csv"), row.names = F)
-      } 
-      
+            setwd(fulltran.dir); 
+            write.csv(ufull.yy.df, paste0("ufull_", yy, ".csv"), row.names = F); 
+            write.csv(uspec.yy.df, paste0("uspec_", yy, ".csv"), row.names = F)
+            
+} 
+#ufull_yy.csv #"uspec_yy.csv"
+#output: ufull.yy.df, uspec.yy.df  
+
 ############################
 # 5_Routine
 ############################
 {
-      routine5.dir <- ("C:/Users/User/Google Drive/z_ALLHM")
-      # yy <- 0    
       #Routine add - core, scenario, and extra yr 0/1 full transactions
-      setwd(routine5.dir); source("50_RoutineAdd.R") #output: sfdf, cfdf, e0fdf
-      rfdf <- rbind(sfdf, cfdf, e0fdf)
-} #Output: Rfdf
-      
-      ############################
-      # 5_Routine -- backup files, move files
-      ############################
-      {
-            rfdf_csvdir <- "C:/Users/User/OneDrive/yy_YearlyFullTran"; b_rfdf_csvdir <- "C:/Users/User/OneDrive/yy_b_YearlyFullTran"
-            setwd(rfdf_csvdir); write.csv(rfdf, paste0("rfullfdf_", yy, ".csv"), row.names = F) 
-            setwd(b_rfdf_csvdir); write.csv(rfdf, paste0("b_rfullfdf_", yy, ".csv"), row.names = F) #backup   
-      }
+      setwd(maincode.dir); source("50_RoutineAdd.R") #output: s.yy.df, c.yy.df, e.yy.df
+      r.yy.df <- rbind(s.yy.df, c.yy.df, e.yy.df) #r.yy.df
 
-      ##############################################
-            #5A: fdf_y - fulltrandf of the year yy
-      ##############################################
-      {
-            ufullfdf.c <- ufullfdf; rfdf.c <- rfdf
-                  ufullfdf.c[] <- lapply(ufullfdf, as.character)
-                  rfdf.c[] <- lapply(rfdf, as.character)
-                        fdf_y <- rbind(ufullfdf.c, rfdf.c)
-            
-            suppressWarnings({
-                  col <- c("kPrice", "Units", "tDate", "mDate")
-                  fdf_y[,col] <- sapply(col, FUN = function(j){as.numeric(fdf_y[,j])})
-                  
-            }) #as.numeric numeric columns
-      } #output: fdf_y
+      ############################
+      # 5_Routine -- backup files
+      ############################
+      setwd(fulltran.dir); write.csv(r.yy.df, paste0("rfull_", yy, ".csv"), row.names = F) 
+
+} #s.yy.df, c.yy.df, e.yy.df
+# "rfull_yy.csv"
+#output: #r.yy.df
+##############################################
+# 5A: f0.yy.df - fulltran.df of the year yy
+##############################################
+{
+      ufull.yy.df[] <- lapply(ufull.yy.df, as.character)
+      r.yy.df[] <- lapply(r.yy.df, as.character)
+      
+      f0.yy.df <- rbind(ufull.yy.df, r.yy.df)
+      suppressWarnings({
+            f0.yy.df <- convclass.f1(f0.yy.df) #as.numeric numeric columns
+      }) 
+      
+      #write.csv ###
+      setwd(fulltran.dir);write.csv(f0.yy.df, paste0("urfull_", yy, ".csv"), row.names = F)
+      
+} #output: f0.yy.df
+#output: urfull_yy.csv
+      
+##############################################
+# 5B: f0.td.df - fulltran.df from 0 to yy
+##############################################
+{
+# f1.td.df <- f0.yy.df ####!!!!!TEMP!!!
+
+#read f0.yy.df (up till yy) assign to f1.td.df
+setwd(fulltran.dir); f0df.csv.files <- list.files(pattern = '^urfull_')
+f0df.csv.files <- subfiles.td.f(f0df.csv.files, yy) #subset 0:yy  #subset up to yy (td)(.files)
+      urfull.td.list <- lapply(f0df.csv.files, FUN = function(f){
+            read.csv(f, stringsAsFactors = F)
+      })
+      f1.td.df <- do.call(rbind, urfull.td.list) 
+      f1.td.df <- convclass.f1(f1.td.df) #convert columns to char then numerics
+#####
+
+}#out: f1.td.df
 
 ############################
-# 6_1BGNcalc
+# 6_1BGNcalc   #INPUT f1.td.df (gonna use =tdate, to calculate pro0, and <= mdate to calculate proT) else 0 method
 ###########################
 {
-      #DIR
-      bgn6.dir <- "C:/Users/User/Google Drive/z_ALLHM"
-      
-      setwd(bgn6.dir)
-      source("60_BGN1.R") #output fdf with bgn columns - fdf_y6
-} #output: fdf_y6
+      setwd(maincode.dir)
+      source("60_BGN1.R") #output fdf with bgn columns - bgn1.td.df
+} #output: bgn1.td.df
 
 ############################
-# 7_BGNstloan & 8_2BGNcalc
+# 7_BGNstloan & ADD LOAN
 ###########################
 {
-      #DIR
-      bgn7.dir <- "C:/Users/User/Google Drive/z_ALLHM"
-      
-      setwd(bgn7.dir)
+      setwd(maincode.dir)
       source("70_BGNstloan.R") #output fdf_y7
-} #output: fdf_y7
-
-      ############################
-      # 7_BGN2 -- writecsv, backup files, move files
-      ############################
-      {
-            fdf_csvdir <- "C:/Users/User/OneDrive/yy_YearlyFullTran"; b_fdf_csvdir <- "C:/Users/User/OneDrive/yy_b_YearlyFullTran"
-            setwd(fdf_csvdir); write.csv(fdf_y7, paste0("zfdf_",yy,".csv"), row.names = F)
-            setwd(b_fdf_csvdir); write.csv(fdf_y7, paste0("b_zfdf_",yy,".csv"), row.names = F)
-      }     #"z_fdf_yy.csv"
+      
+}#output: bgn2.td.df
 
 ############################
 # 8_ENDcalc
 ###########################
 {
-      #DIR
-      end8.dir <- "C:/Users/User/Google Drive/z_ALLHM"
-      
-      setwd(end8.dir)
-      source("80_END1.R") #output fdf8_td
-      fdf8_td[,"TrackNo"] <- trackno_f(fdf8_td)
-} #output: fdf8_td
-      
-      ############################
-      # 8_ENDcalc -- writecsv, backup files, move files
-      ############################
-      {
-            fdftd_csvdir <- "C:/Users/User/OneDrive/yy_YearlyFullTran"; b_fdftd_csvdir <- "C:/Users/User/OneDrive/yy_b_YearlyFullTran"
-            setwd(fdftd_csvdir); write.csv(fdf8_td, paste0("fdf8_td_",yy,".csv"), row.names = F)
-            setwd(b_fdftd_csvdir); write.csv(fdf8_td, paste0("b_fdf8_td_",yy,".csv"), row.names = F)
-      }     #"fdf8_td_",yy,".csv"
-      
-      
-} #fdf8_td
+      setwd(maincode.dir)
+      source("80_END1.R")
+      end3.td.df[,"TrackNo"] <- trackno.f(end3.td.df)
+            #BACKUP:
+            setwd(fulltran.dir); write.csv(end3.td.df, paste0("b_end3_td_", yy, ".csv"), row.names = F)
+} #output: end3.td.df
 
+View(end3.td.df)
 
-
-{
 ############################
-# A1_Report_prep_list
+# 9_balsheet_yy+1, write.csv(balsh_y)
 ###########################
 
-#DIR-A1 
-A1.dir <- "C:/Users/User/Google Drive/z_ALLHM"
 
-
-setwd(A1.dir); source("A1_01_Core.R") #get 10 list for report? - aggregate them! >write.csv //rmarkdown      
-
-# tname <- "Alpha 1"
-# temp <- lapply(1:1, FUN = function(i){
-#       i <<- i
-#       tname <- teamname12[i]; fname <- paste0(tname, "_Report_", yy+1)
-#       tname <- tname #main parameter to Report.Rmd
-#       # options(scipen=12)
-#       rmarkdown::render(input = "Report.Rmd", output_format = "html_document", output_file = paste0(fname, ".html"), output_dir = out.report.dir)
-#       
-# })
-
-} #Report prep
-
-
-
-{
-############################
-# A2_Report_output
-###########################
-
-#output-report-DIR
-out.report.dir <- "C:/Users/User/OneDrive/D_Distribute/R_report"
-
-setwd(A1.dir) #for Report.Rmd
-# temp <- lapply(3, FUN = function(i){
-# temp <- lapply(1:length(teamname12), FUN = function(i){
-
-
-loop <- 1:12
-for(i in loop){
-      i <<- i
-      tname <<- teamname12[i]; fname <<- paste0(tname, "_Report_", yy+1)
-      tname <<- tname #main parameter to Report.Rmd
-      
-      rmarkdown::render(input = "Report.Rmd", output_format = "html_document", output_file = paste0(fname, ".html"), output_dir = out.report.dir)
-
-# })
-}
-      
-} #REPORT: output 12 html report to R_Report, waiting to be distributed
 

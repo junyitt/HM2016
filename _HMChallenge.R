@@ -1,22 +1,24 @@
-
+yy=0
 MAINCODEDIR <- "C:/Users/User/Google Drive/z_ALLHM/"
 setwd(MAINCODEDIR)
+source("_HM_alldirectory.R"); source("_HM_allfunction.R")
 
 
-#BEGIN!
-yy <- 0
-setwd(MAINCODEDIR)
-source("D0_Distribution.R")
+# #BEGIN!
+# yy <- 0
+# setwd(MAINCODEDIR)
+# source("D0_Distribution.R")
 
 
 ##END OF YEAR COMPUTE:
 
-real_run <- T
+# real_run <- T
 yy <- 0
 setwd(MAINCODEDIR)
 source("_HMProcessFlow.R")
-setwd(MAINCODEDIR)
-source("D_DistributeDoc.R")
+
+# setwd(MAINCODEDIR)
+# source("D_DistributeDoc.R")
 
 
 yy <- 1

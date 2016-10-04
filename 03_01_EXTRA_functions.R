@@ -1,302 +1,299 @@
-
-#General functions
-      #DUPLICATE: CUTOFF function: Cutoff at the n-1 transactions, where the nth transaction' remarks = "cutoffapril"
-      subcutdf_f <- function(excfulldf){
-            rem1 <- excfulldf[, "Remarks"]
-            rem2 <- gsub(tolower(rem1), pattern = "[[:space:]]", replacement = "")
-            if("cutoffapril" %in% rem1){
-                  nx <- grep("cutoffapril", rem2)
-                  excfulldf[1:(nx-1),]
-            }else{
-                  excfulldf
-            }
-      } 
-      
-      #DUPLICATE: check validitiy (EXC)
-      VLf <- function(tName, tKey, tKeydf){
-            teamname1 <- tKeydf[, "TeamName"]
-            teamname1 <- gsub(tolower(teamname1), pattern = "[[:space:]]", replacement = "")     
-            tname2 <- gsub(tolower(tName), pattern = "[[:space:]]", replacement = "") 
-            uu <- teamname1 %in% tname2
-            tkey1 <- tKeydf[uu, "tKey"]
-            #invalid if wrong trading key
-            if(length(tKey) == 0){
-                  0
-            }else if(is.na(tKey)){
-                  0
-            }else if(!(tKey %in% tkey1)){
+#tkey check: return 0 or 1
+check.tkey.f <- function(TeamName.c, tKey.c, tkey.df){
+            allteamname.v <- tkey.df[, "TeamName"]
+            uu <- allteamname.v %in% TeamName.c 
+            correct.tkey <- tkey.df[uu, "tKey"]
+            
+            if(!(tKey.c == correct.tkey)){ #invalid if wrong trading key
                   0
             }else{
                   1
             }
-      } #Validity check on tkey for yr3 (bond extra), yr 4 (harrym)
+} 
       
-      #DUPLICATE: return validitiy remarks
-      VLRf <- function(vl){
-            if(vl==1){"OK"}else{"Invalid Trading Key"}
+#yr2: max 4 transactions
+maxfour.f <- function(EXTRAraw.df, tkeydf){
+      N <- nrow(EXTRAraw.df)
+      vl.v <- sapply(1:N, FUN = function(j){    check.tkey.f(EXTRAraw.df[j, "TeamName"], EXTRAraw.df[j, "tKey"], tkeydf)      })
+      truedf <- EXTRAraw.df[vl.v %in% 1,]
+            uniqueteam.v <- unique(truedf[,"TeamName"])
+            rawtran.team.df.list <- lapply(uniqueteam.v, FUN = function(x){
+                                    u <- truedf[,"TeamName"] %in% x
+                                    if(sum(truedf[u,"Units"]) > 12000){
+                                          tdf <- truedf[u,]; N2 <- nrow(tdf)
+                                          tdf[(N2-3):N2,]
+                                    }else{
+                                          tdf <- truedf[u,]
+                                          tdf
+                                    }
+                              })
+      do.call(rbind, rawtran.team.df.list)
+}
+
+#Validity check and validity remarks
+VLandVLR.EXTRA.v2.f <- function(TeamName.c, tKey.c, tkey.df){
+      if(check.tkey.f(TeamName.c, tKey.c, tkey.df) == 0){
+            c(0, "Wrong trading key")
+      }else{
+            
+            c(1, "EXTRA: OK")
       }
+}
+      
 
 ########YR 0,1 - PV     #must be unique teamname? one only!
-      conv1extra_f <- function(EXTRArawdf, tkeydf){
-            EXTRArawdf<- subcutdf_f(EXTRArawdf)
-            edf <- EXTRArawdf
-            N <- nrow(edf)
-            colnames(edf) <- c("ExtraName", "tDate", "Service", "tName", "tKey", "Remarks")
-                  vl_v <- sapply(1:N, FUN = function(j){VLf(edf[j, "tName"], edf[j, "tKey"], tkeydf)})
-                  #Output: spectran
-                  edf <- edf[vl_v==1,]
-                  #unique team?
-                  edf2 <- lapply(tkeydf[,"TeamName"], FUN = function(k){
-                        u <- edf[, "tName"] == k
-                        edf[u, ][sum(u),]
-                  })
-                  do.call(rbind,edf2)
-      }
+conv1extra.f <- function(EXTRAraw.df, tkeydf){ #SPECTRAN ##filter out excess/invalid raw extra transactions.
+N <- nrow(EXTRAraw.df)
+if(N == 0){
+      EXTRAraw.df
+}else{
+      colnames(EXTRAraw.df) <- c("ExtraName", "tDate", "Service", "TeamName", "tKey", "Remarks")
       
+      #Check Trading Key
+            vl.v <- sapply(1:N, FUN = function(j){    check.tkey.f(EXTRAraw.df[j, "TeamName"], EXTRAraw.df[j, "tKey"], tkeydf)      })
+            
+            #Output: valid spectran1
+            edf1 <- EXTRAraw.df[vl.v %in% 1,]
+            
+      #1 Contract per team
+      uniqueteam.v <- unique(EXTRAraw.df[, "TeamName"])
+      
+      edf2 <- lapply(uniqueteam.v, FUN = function(k){
+            u <- edf1[, "TeamName"] %in% k
+            edf1[u, ][sum(u),]
+      })
+      
+      edf3 <- do.call(rbind,edf2)
+      edf3
+}
+}
+
 ########YR 2 - arbitrage 
-
-      #DUPLICATE: return the value of the desired variable, input: FIC, metadf, variablename
-      exc_valf <- function(FIC, metadf, vname){
-            uu <- metadf[,"FIC"] %in% FIC
-            #vname can take: Underlying, Currency, kPrice, tDate, mDate
-            tryCatch(metadf[uu, vname], error = function(e){NA})
-      }
-
-      conv2extra_f <- function(EXTRArawdf, excficmetadf, tkeydf){
-            EXTRArawdf <- subcutdf_f(EXTRArawdf) 
-if(nrow(EXTRArawdf) == 0){
-
+      
+conv2extra.f <- function(EXTRAraw.df, ficmeta.df, tkeydf){ #required function: #returnmetaval.f(fic, ficmeta.df, vname)
+if(nrow(EXTRAraw.df) == 0){
+      EXTRAraw.df
 }else{
       
       #FULL-TRAN required variables list
-      fullvar1 <- c("TrackNo","classf", "FIC", "rClass", "sClass", "TeamName", "cParty", 
-                    "cType", "Underlying", "Currency", "kPrice", 
-                    "pos1", "Units", "tDate", "mDate", "tKey", "Remarks",
-                    "VL", "VLRemarks")
+      fullvar1 <- fullvar.f()
       
-      #create empty vector for fullvar1
-      for(i in 1:length(fullvar1)){assign(fullvar1[i], value = vector())}  
-      edf <- EXTRArawdf
-      N <- nrow(edf)
-      colnames(edf) <- c("FIC", "tName", "pos1", "Units", "tKey", "Remarks")
+      #subset only latest 4 transactions per team
+      colnames(EXTRAraw.df) <- c("FIC", "TeamName", "pos1", "Units", "tKey", "Remarks")
+            edf <- maxfour.f(EXTRAraw.df, tkeydf)
+                  N <- nrow(edf)
+            
       
       #EACH VARIABLES - treatment
       TrackNo <- rep(1, N) 
       classf <- rep("EXTRA", N)
       FIC <- edf[,"FIC"]
-      rClass <- rep(NA, N) #######TO BE DETERMINED #####!!!!!!!!!!!!
-      sClass <- rep(NA,N) #######TO BE DETERMINED #####!!!!!!!!!!!!
-      TeamName <- edf[,"tName"]
-            cParty <- rep("Banker E2", N)
-            cType <- sapply(X = FIC, FUN = function(x){exc_valf(x, excficmetadf, "cType")})           #require meta
-            Underlying <- sapply(X = FIC, FUN = function(x){exc_valf(x, excficmetadf, "Underlying")}) #require meta
-            Currency <- sapply(X = FIC, FUN = function(x){exc_valf(x, excficmetadf, "Currency")})     #meta
-            kPrice <- sapply(X = FIC, FUN = function(x){exc_valf(x, excficmetadf, "kPrice")})         #meta
-                  pos1 <- edf[, "pos1"]
-                  Units <- round(edf[,"Units"],0)
-                  tDate <- sapply(X = FIC, FUN = function(x){exc_valf(x, excficmetadf, "tDate")})    #meta
-                  mDate <- sapply(X = FIC, FUN = function(x){exc_valf(x, excficmetadf, "mDate")})    #meta
-                  tKey <- substr(edf[,"tKey"], 4, 7)
-                  Remarks <- edf[,"Remarks"]
-                        VL <-  sapply(X=1:N, function(j){VLf(TeamName[j], edf[j,"tKey"], tkeydf)}) 
-                        VLRemarks <- sapply(X=1:N, function(j){VLRf(VL[j])}) 
+      TeamName <- edf[,"TeamName"]
+      cParty <- rep("Banker(EXTRA)", N)
+            cType <- sapply(X = FIC, FUN = function(x){returnmetaval.f(x, ficmeta.df, "cType")})           #require meta
+            Underlying <- sapply(X = FIC, FUN = function(x){returnmetaval.f(x, ficmeta.df, "Underlying")}) #require meta
+            Currency <- sapply(X = FIC, FUN = function(x){returnmetaval.f(x, ficmeta.df, "Currency")})     #meta
+            kPrice <- sapply(X = FIC, FUN = function(x){returnmetaval.f(x, ficmeta.df, "kPrice")})         #meta
+      pos1 <- edf[, "pos1"]
+      cff <- sapply(X = 1:N, FUN = function(j){    cff.f(cType.c = cType[j], pos1.c = pos1[j])   })
+      Units <- round(edf[,"Units"],0)
+            tDate <- sapply(X = FIC, FUN = function(x){returnmetaval.f(x, ficmeta.df, "tDate")})    #meta
+            mDate <- sapply(X = FIC, FUN = function(x){returnmetaval.f(x, ficmeta.df, "mDate")})    #meta
+            tKey <- substr(edf[,"tKey"], 4, 7)
+      Remarks <- edf[,"Remarks"]
+      VL <-  sapply(X=1:N, function(j){     v3 <- VLandVLR.EXTRA.v2.f(TeamName[j], edf[j,"tKey"], tkeydf); v3[1]       }) 
+      VLRemarks <- sapply(X=1:N, function(j){     v3 <- VLandVLR.EXTRA.v2.f(TeamName[j], edf[j,"tKey"], tkeydf); v3[2]       })  
                         
       #output fulldf
-      efdf <<- data.frame(TrackNo, classf, FIC, rClass, sClass, TeamName, cParty, 
-            cType, Underlying, Currency, kPrice, 
-            pos1, Units, tDate, mDate, tKey, Remarks,
-            VL, VLRemarks)
-      colnames(efdf) <- fullvar1
-      efdf
+      data.frame(TrackNo, classf, FIC, TeamName, cParty, 
+                 cType, Underlying, Currency, kPrice, 
+                 pos1, cff, Units, 
+                 tDate, mDate, tKey, 
+                 Remarks, VL, VLRemarks, stringsAsFactors = F)
 }
 }
 
 ########YR 3  BOND FAIR XV
 
-      conv3extra_f <- function(EXTRArawdf, tkeydf){
+#output: filtered trading key, post-OPENIPO method, PRE-fulltran, b.df
+outbd.df.f <- function(EXTRAraw.df, tkeydf){
+      colnames(EXTRAraw.df) <- c("ExtraName", "tDate", "FIC", "BiddingPrice", "Units", "TeamName", "tKey", "Remarks")      
+      
+      #Filter Trading Key
+      N <- nrow(EXTRAraw.df)
+      vl.v <- sapply(1:N, FUN = function(j){    check.tkey.f(EXTRAraw.df[j, "TeamName"], EXTRAraw.df[j, "tKey"], tkeydf)      })
+      u1 <- vl.v %in% 1; u2 <- EXTRAraw.df[, "Units"] > 0;  u3 <- EXTRAraw.df[, "BiddingPrice"] >= 50; 
+      EXTRAraw.df1 <- EXTRAraw.df[u1 & u2 & u3,]
+      
+      
+      FIC <- unique(as.character(EXTRAraw.df1[,"FIC"])) #to loop through all unique bond code
+      bdf_list <- lapply(FIC, FUN = function(bc){ #loop through all unique bond code; return final df 
+            u <- EXTRAraw.df1[,"FIC"] %in% bc; bdf <- EXTRAraw.df1[u,]
+            bdf <- bdf[order(-bdf[,"BiddingPrice"]),]
+            cmsum <- cumsum(bdf[,"Units"]); v <- cmsum >= 100000 #cap issue size = 100k for all bond here
+            if(sum(v) == 0){  #lack in subscription, demand less than issue size 100k
+                  price <- min(bdf[,"BiddingPrice"]); 
+                  bdf[,"BiddingPrice"] <- rep(price, nrow(bdf))
+            }else{
+                  price <- bdf[v,"BiddingPrice"][1]; prorata_u <- bdf[,"BiddingPrice"] == price; pbelow_i <- bdf[,"BiddingPrice"] > price
+                  sbelow <- sum(bdf[pbelow_i,"Units"]); ss <- sum(bdf[prorata_u,"Units"]) 
+                  rrem <- 100000-sbelow
+                  bdf[prorata_u,"Units"] <- round(bdf[prorata_u,"Units"]/ss*rrem,0)
+                  uu <- bdf[,"BiddingPrice"] >= price
+                  bdf <- bdf[uu, ]
+                  bdf[,"BiddingPrice"] <- rep(price, nrow(bdf))
+            }
+            bdf
+      })#ipo method, output = valid bond transactions, with "prorata" adjusted units transacted
+      bdf2 <- do.call(rbind,bdf_list) #pre-full transactions
+      bdf2
+}
 
-      #belongs to yr 03 - bond bidding Extra Events ->> meta to full ##meta-FIC-A 
-      #need filter calculation - openIPO method
+conv3extra.f <- function(EXTRAraw.df, tkeydf){
+
+if(nrow(EXTRAraw.df) == 0){
+      EXTRAraw.df
+}else{
       
-      #subcut
-      EXTRArawdf <- subcutdf_f(EXTRArawdf) 
-      
-      colnames(EXTRArawdf) <- c("ExtraName", "tDate", "BondCode", "BiddingPrice", "Units", "tName", "tKey", "Remarks")      
-     
-      vl_v <- sapply(1:nrow(EXTRArawdf), FUN = function(j){
-            VLf(EXTRArawdf[j,"tName"], EXTRArawdf[j,"tKey"], tkeydf)
-      }) #validity check on tkey
-      EXTRArawdf1 <- EXTRArawdf[vl_v==1,]
-      
-            bcode <- unique(as.character(EXTRArawdf[,"BondCode"])) #to loop through all unique bond code
-            bdf_list <- lapply(bcode, FUN = function(bc){
-                  u <- EXTRArawdf1[,"BondCode"] == bc; bdf <- EXTRArawdf1[u,]
-                  bdf <- bdf[order(-bdf[,"BiddingPrice"]),]
-                  cmsum <- cumsum(bdf[,"Units"]); v <- cmsum >= 100000 #cap issue size = 100k for all bond here
-                  if(sum(v) == 0){  #lack in subscription, demand less than issue size 100k
-                        price <- min(bdf[,"BiddingPrice"]); 
-                        bdf[,"BiddingPrice"] <- rep(price, nrow(bdf))
-                  }else{
-                        price <- bdf[v,"BiddingPrice"][1]; prorata_u <- bdf[,"BiddingPrice"] == price; pbelow_i <- bdf[,"BiddingPrice"] > price
-                        sbelow <- sum(bdf[pbelow_i,"Units"]); ss <- sum(bdf[prorata_u,"Units"]) 
-                        rrem <- 100000-sbelow
-                        bdf[prorata_u,"Units"] <- round(bdf[prorata_u,"Units"]/ss*rrem,0)
-                        uu <- bdf[,"BiddingPrice"] >= price
-                        bdf <- bdf[uu, ]
-                        bdf[,"BiddingPrice"] <- rep(price, nrow(bdf))
-                  }
-                        bdf
-            })#ipo method, output = valid bond transactions, with "prorata" adjusted units transacted
-            bdf <- do.call(rbind,bdf_list) #pre-full transactions
-      
-      #convert2fulltransactions:
-            #FULL-TRAN required variables list
-            fullvar1 <- c("TrackNo","classf", "FIC", "rClass", "sClass", "TeamName", "cParty", 
-                          "cType", "Underlying", "Currency", "kPrice", 
-                          "pos1", "Units", "tDate", "mDate", "tKey", "Remarks",
-                          "VL", "VLRemarks")
-            for(i in 1:length(fullvar1)){assign(fullvar1[i], value = vector())}  
-            N <- nrow(bdf)
-                  TrackNo <- rep("EXTRA", N)   #by the end only add?
-                  classf <- rep("EXTRA", N)
-                  FIC <- bdf[,"BondCode"] 
-                  rClass <- rep(NA, N) #######TO BE DETERMINED #####!!!!!!!!!!!!
-                  sClass <- rep(NA,N) #######TO BE DETERMINED #####!!!!!!!!!!!!
-                  TeamName <- bdf[, "tName"]
-                  cParty <- bdf[, "ExtraName"]
-                        cType <- rep("Bond-E", N) 
-                        Underlying <- rep(NA,N) 
-                        Currency <- rep("MYR",N)
-                        kPrice <- bdf[,"BiddingPrice"]     
-                        pos1 <- rep("Long",N)
-                        Units <- bdf[, "Units"]
-                        tDate <- rep(3,N)
-                        mDate <- rep(5,N)
-                        tKey <- substr(bdf[,"tKey"], 4, 7)
-                        Remarks <- bdf[,"Remarks"]
-                        VL <-  rep(1,N)
-                        VLRemarks <- rep(1,N)
+#filtered trading key, post-OPENIPO method -> bdf
+bdf <- outbd.df.f(EXTRAraw.df, tkeydf)
+
+#convert2fulltransactions:
+      #FULL-TRAN required variables list
+      fullvar1 <- fullvar.f()
+      N <- nrow(bdf)
             
-            #output fulldf
-            data.frame(TrackNo, classf, FIC, rClass, sClass, TeamName, cParty, 
-                  cType, Underlying, Currency, kPrice, 
-                  pos1, Units, tDate, mDate, tKey, Remarks,
-                  VL, VLRemarks)
+      TrackNo <- rep(NA, N) 
+      classf <- rep("EXTRA", N)
+      FIC <- bdf[,"FIC"] 
+      TeamName <- bdf[, "TeamName"]
+      cParty <- bdf[, "ExtraName"]
+            cType <- rep("Bond-E", N) 
+            Underlying <- rep(NA,N) 
+            Currency <- rep("MYR",N)
+            kPrice <- bdf[,"BiddingPrice"]     
+      pos1 <- rep("Long",N)
+      cff <- sapply(X = 1:N, FUN = function(j){    cff.f(cType[j], pos1[j])     })
+      Units <- bdf[, "Units"]
+            tDate <- rep(3,N)
+            mDate <- rep(5,N)
+            tKey <- substr(bdf[,"tKey"], 4, 7)
+            Remarks <- bdf[,"Remarks"]
+            VL <-  rep(1,N)
+            VLRemarks <- rep("EXTRA3: OK",N)
+            
+#output fulldf
+data.frame(TrackNo, classf, FIC, TeamName, cParty, 
+           cType, Underlying, Currency, kPrice, 
+           pos1, cff, Units, 
+           tDate, mDate, tKey, 
+           Remarks, VL, VLRemarks, stringsAsFactors = F)
+
+}
 }
 
 
 ########YR 4 HARRY M: convert EXTRArawdf to fulltran
 
-      compsharpe <- function(weight, rr, cv){
-            W <- weight
-            n <- nrow(cv)
-            VarP <- sum(t(W) %*% cv %*% W)
-            RP <- sum(rr*W)
-            sharpe <- RP/sqrt(VarP)
-            sharpe
-      }
+compsharpe <- function(weight, rr, cv){
+      W <- weight
+      n <- nrow(cv)
+      VarP <- sum(t(W) %*% cv %*% W)
+      RP <- sum(rr*W)
+      sharpe <- RP/sqrt(VarP)
+      sharpe
+}
+
+maxsharpe <- function(r, cv){
+      cv_inv <- solve(cv)
+      J <- cv_inv %*% r
+      sj <- sum(J)
       
-      maxsharpe <- function(r, cv){
-            cv_inv <- solve(cv)
-            J <- cv_inv %*% r
-            sj <- sum(J)
-            
-            #compute Weightage, W
-            W <- J/sum(J)
-            tW <- t(W)
-            #compute portfolio expected return
-            RP <- sum(W*r)
-            #compute portfolio variance
-            VarP <- sum(tW %*% cv %*% W) 
-            #compute maximized sharpe ratio
-            sharpe <- (RP)/sqrt(VarP)
-            #output max sharpe ratio
-            sharpe
-      }
+      #compute Weightage, W
+      W <- J/sum(J)
+      tW <- t(W)
+      #compute portfolio expected return
+      RP <- sum(W*r)
+      #compute portfolio variance
+      VarP <- sum(tW %*% cv %*% W) 
+      #compute maximized sharpe ratio
+      sharpe <- (RP)/sqrt(VarP)
+      #output max sharpe ratio
+      sharpe
+}
+
+validrawdf.f <- function(EXTRAraw.df, tkeydf){
+      colnames(EXTRAraw.df) <- c("ExtraName", "tDate", "Wa", "Wb", "Wc", "Wd", "TeamName", "tKey", "Remarks")
+      N <- nrow(EXTRAraw.df)
+      vl.v <- sapply(1:N, FUN = function(j){    check.tkey.f(EXTRAraw.df[j, "TeamName"], EXTRAraw.df[j, "tKey"], tkeydf)      })
+            edf0 <- EXTRAraw.df[vl.v == 1,] #only get those valid transactions
+            uniqueteam.v <- edf0[,"TeamName"]
+            edf1 <- lapply(uniqueteam.v, FUN = function(x){
+                  u <- edf0[,"TeamName"] %in% x
+                  edf0[u,][sum(u),]          
+            })
+            edf2 <- do.call(rbind,edf1)
+            edf2
+}
       
-      conv4extra_f <- function(EXTRArawdf, tkeydf){
-            #yr 04, HarryM.
-            #subcut
-            EXTRArawdf <- subcutdf_f(EXTRArawdf) 
-            
-            colnames(EXTRArawdf) <- c("ExtraName", "tDate", "Wa", "Wb", "Wc", "Wd", "tName", "tKey", "Remarks")
-            vl_v <- sapply(1:nrow(EXTRArawdf), FUN = function(j){
-                  VLf(EXTRArawdf[j,"tName"], EXTRArawdf[j,"tKey"], tkeydf)
-            }) #check tkey
-            edf <- EXTRArawdf[vl_v == 1,] #only get those valid transactions
-            
-            #do not use edf, now recreate "temp values" for Alpha 1 to Beta 6
-            edfn <- sapply(tkeydf[,1], FUN = function(jj){ #loop through team name
-                  u <- edf[, "tName"] == jj
-                  e <- edf[u,][sum(u),]
-                  w <- t(t(as.numeric((e[,3:6]))))
-                  compsharpe(w, rr, cv)
-            }) #sharpe ratio for all teams, teams doesn't exist or invalid, will have NA
-            cashrewardn <- sapply(edfn, FUN = function(j){ 
-                  if(is.na(j)){
-                        0
-                  }else{
-                        maxs <- maxsharpe(rr, cv)
-                        dev <- abs((maxs - j)/maxs)
-                        threshold <- c(0.01, 0.05, 0.10, 0.20, 0.50)
-                        cashr <- c(1e7, 8e6, 5e6, 2e6, 1e6, 0)
-                        tr <- dev > threshold
-                        cashr[sum(tr)+1]
-                  }
-            }) #loop through team name #cash
-            scoren <- sapply(edfn, FUN = function(j){ #loop through team name
-                  if(is.na(j)){
-                        0
-                  }else{
-                        maxs <- maxsharpe(rr, cv); maxsharpeR1 <<- maxs
-                        dev <- abs((maxs - j)/maxs)
-                        threshold <- c(0.01, 0.05, 0.10, 0.20, 0.50)
-                        score <- c(20, 18, 15, 10, 5, 0)/20*15
-                        tr <- dev > threshold
-                        score[sum(tr)+1]
-                  }
-            }) #score 
-            rem2 <- lapply(tkeydf[,1], FUN = function(jj){ 
-                  u <- edf[, "tName"] == jj
-                  if(sum(u)==0){
-                        "NA"
-                  }else{
-                        edf[u,"Remarks"][sum(u)]
-                  }
-            }); rem <- as.character(do.call(rbind, rem2)[,1]) #loop through team name for remarks
-            
-            #FULL-TRAN required variables list
-            fullvar1 <- c("TrackNo","classf", "FIC", "rClass", "sClass", "TeamName", "cParty", 
-                          "cType", "Underlying", "Currency", "kPrice", 
-                          "pos1", "Units", "tDate", "mDate", "tKey", "Remarks",
-                          "VL", "VLRemarks")
-            for(i in 1:length(fullvar1)){assign(fullvar1[i], value = vector())}  
-            N <- length(edfn)
-                  TrackNo <- rep("EXTRA", N)   #by the end only add?
-                  classf <- rep("EXTRA", N)
-                  FIC <- rep(NA, N) #cashreward FIC?
-                  rClass <- rep(NA, N) #######TO BE DETERMINED #####!!!!!!!!!!!!
-                  sClass <- rep(NA,N) #######TO BE DETERMINED #####!!!!!!!!!!!!
-                  TeamName <- names(scoren)
-                  cParty <- rep("Harry M.", N)
-                        cType <- rep("Cash", N) 
-                        Underlying <- rep(NA,N) 
-                        Currency <- rep("MYR",N)
-                        kPrice <- round(edfn,6)       #sharpe ratio
-                              pos1 <- rep("Receive",N)
-                              Units <- cashrewardn
-                              tDate <- rep(4,N)
-                              mDate <- rep(5,N)
-                              tKey <- rep("tkey", N) #fixed later
-                              Remarks <- rem
-                                    VL <-  rep(1,N)
-                                    VLRemarks <- scoren #; score.extra4 <<- scoren
+conv4extra.f <- function(EXTRAraw.df, tkeydf, rr, cv){
+if(nrow(EXTRAraw.df) == 0){
+      EXTRAraw.df
+}else{
+      edf <- validrawdf.f(EXTRAraw.df, tkeydf); n2 <- nrow(edf) #valid entry extrarawdf
       
-                              #output fulldf
-                              data.frame(TrackNo, classf, FIC, rClass, sClass, TeamName, cParty, 
-                                    cType, Underlying, Currency, kPrice, 
-                                    pos1, Units, tDate, mDate, tKey, Remarks,
-                                    VL, VLRemarks)
-      }
+      sharpe.entry.v <- sapply(1:n2, FUN = function(jj){ 
+            #c("ExtraName", "tDate", "Wa", "Wb", "Wc", "Wd", "TeamName", "tKey", "Remarks")
+            w <- t(t(as.numeric((edf[jj,3:6]))))
+            compsharpe(w, rr, cv)
+      })  #compute sharpe ratio for valid entry of each team
+      cashrewardn <- sapply(sharpe.entry.v, FUN = function(j){ 
+                  maxs <- maxsharpe(rr, cv)
+                  dev <- abs((maxs - j)/maxs)
+                  threshold <- c(0.01, 0.05, 0.10, 0.20, 0.50)
+                  cashr <- c(1e7, 8e6, 5e6, 2e6, 1e6, 0)
+                  tr <- dev > threshold
+                  cashr[sum(tr)+1]
+      }) #loop through each valid entry #cash
+      scoren <- sapply(sharpe.entry.v, FUN = function(j){ #loop through team name
+                  maxs <- maxsharpe(rr, cv)
+                  dev <- abs((maxs - j)/maxs)
+                  threshold <- c(0.01, 0.05, 0.10, 0.20, 0.50)
+                  score <- c(20, 18, 15, 10, 5, 0)/20*15
+                  tr <- dev > threshold
+                  score[sum(tr)+1]
+      }) #score 
+      
+      #FULL-TRAN required variables list
+      fullvar1 <- fullvar.f()
+      N <- nrow(edf)
+      
+      TrackNo <- rep(NA, N)   
+      classf <- rep("EXTRA", N)
+      FIC <- rep(NA, N) 
+      TeamName <- edf[,"TeamName"]
+      cParty <- rep("Harry M.", N)
+            cType <- rep("Cash", N) 
+            Underlying <- rep(NA, N) 
+            Currency <- rep("MYR", N)
+            kPrice <- sharpe.entry.v      #sharpe ratio
+      pos1 <- rep("Receive", N)
+      cff <- sapply(X = 1:N, FUN = function(j){  cff.f(cType[j], pos1[j])  })
+      Units <- cashrewardn
+            tDate <- rep(4,N)
+            mDate <- rep(5,N)
+            tKey <- substr(edf[,"tKey"], 4, 7)
+      Remarks <- edf[,"Remarks"]
+      VL <-  rep(1,N)
+      VLRemarks <- scoren 
+
+#output fulldf
+data.frame(TrackNo, classf, FIC, TeamName, cParty, 
+           cType, Underlying, Currency, kPrice, 
+           pos1, cff, Units, 
+           tDate, mDate, tKey, 
+           Remarks, VL, VLRemarks, stringsAsFactors = F)
+}
+}
 
 

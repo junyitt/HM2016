@@ -1,23 +1,26 @@
 #60_BGN1.R
 
-#source("C:/Users/User/Google Drive/r_Rfunction/_myCode.R")
+#DIR required
+#maincode.dir, meta.dir
 
-#DIR
-bgn6.f.dir <- "C:/Users/User/Google Drive/z_ALLHM"
+#FUNCTIONs (general) required
+#importmeta.f
 
-#source functions
-setwd(bgn6.f.dir); source("C:/Users/User/Google Drive/z_ALLHM/60_01_BGN1Functions.R")
+      #ENVIRONMENT OUTPUT:
+      #bgn1.td.df
 
+#Internal FUNCTION #bgn0.f, pro0.f, tfee.f
 
-#META_DIR
-wd_metaunderlyingprice <- "C:/Users/User/Google Drive/z_ALLHM/v5.0_7_Instruments"
+setwd(maincode.dir)
+source("60_01_BGN1Functions.R")
 
-#META-underlyingprice, metaficA, metabond-e
-setwd(wd_metaunderlyingprice)
-      dfmetaunderprice <- as.data.frame(read_excel("meta-underlyingprice.xlsx"))
-      dfmetafic <- as.data.frame(read_excel("meta-FIC-A.xlsx"))
-      dfmetabonde <- as.data.frame(read_excel("meta-bond-e-B.xlsx"))  
+####### 60_BGN Calc 1 #########
+
+#META-underlyingprice, metafic, meta-employservice
+      meta.undprice.df <- importmeta.f(meta.dir, fname = "meta-underlyingprice.xlsx")
+      meta.fic.df <- importmeta.f(meta.dir, fname = "meta-FIC.xlsx")
+      meta.employservice.df <- importmeta.f(meta.dir, fname = "meta-employservice.xlsx")
       
-#output: fdf_y6
-      fdf_y6 <- bgn1df_f(fdf_y) #input: fdf_y
+#output: bgn1.td.df
+      bgn1.td.df <- bgn0.f(f1.td.df, meta.undprice.df, meta.fic.df, meta.employservice.df) #input: f1.td.df
       

@@ -1,105 +1,70 @@
 #01_01_EXC_functions.R
 
+#import RAW-EXC-TRAN
+importrawEXC.f <- function(raw_EXC.dir, yy){
+      setwd(raw_EXC.dir)
+      EXCrawdf <- as.data.frame(read_excel(paste0("EXC_", yy, ".xlsx")))
+      EXCrawdf <- cutoff.f(EXCrawdf)   
+      EXCrawdf
+}
+
 #MAIN CONVERT FUNCTION, that CONVERT RAW-EXCDF to FULL-TRAN-EXCDF
-##INPUT: rawdf, tkeydf
-EXCfullconv_f <- function(excdf, excficmetadf, tkeydf){
+EXCfullconv.f <- function(rawdf, ficmetadf, tkeydf){
       #FULL-TRAN required variables list
-      fullvar1 <- c("TrackNo","classf", "FIC", "rClass", "sClass", "TeamName", "cParty", 
-                    "cType", "Underlying", "Currency", "kPrice", 
-                    "pos1", "Units", "tDate", "mDate", "tKey", "Remarks",
-                    "VL", "VLRemarks")
+      fullvar1 <- fullvar.f()
       
-      #create empty vector for fullvar1
-      for(i in 1:length(fullvar1)){assign(fullvar1[i], value = vector())}  
-      N <- nrow(excdf)
-      colnames(excdf) <- c("FIC", "tName", "pos1", "Units", "tKey", "Remarks")
+      N <- nrow(rawdf)
+      colnames(rawdf) <- c("FIC", "TeamName", "pos1", "Units", "tKey", "Remarks")
       
             #EACH VARIABLES - treatment
-            TrackNo <- rep(1, N)
+            TrackNo <- rep(NA, N)
             classf <- rep("EXC", N)
-            FIC <- excdf[,"FIC"]
-            rClass <- rep(NA, N) #######TO BE DETERMINED #####!!!!!!!!!!!!
-            sClass <- rep(NA,N) #######TO BE DETERMINED #####!!!!!!!!!!!!
-            TeamName <- excdf[,"tName"]
+            FIC <- rawdf[,"FIC"]
+            TeamName <- rawdf[,"TeamName"]
             cParty <- rep("Exchange", N)
-                  cType <- sapply(X = FIC, FUN = function(x){exc_valf(x, excficmetadf, "cType")})           #require meta
-                  Underlying <- sapply(X = FIC, FUN = function(x){exc_valf(x, excficmetadf, "Underlying")}) #require meta
-                  Currency <- sapply(X = FIC, FUN = function(x){exc_valf(x, excficmetadf, "Currency")})     #meta
-                  kPrice <- sapply(X = FIC, FUN = function(x){exc_valf(x, excficmetadf, "kPrice")})         #meta
-                  pos1 <- excdf[, "pos1"]
-                  Units <- round(excdf[,"Units"],0)
-                  tDate <- sapply(X = FIC, FUN = function(x){exc_valf(x, excficmetadf, "tDate")})    #meta
-                  mDate <- sapply(X = FIC, FUN = function(x){exc_valf(x, excficmetadf, "mDate")})    #meta
-                  tKey <- substr(excdf[,"tKey"], 4, 7)
-                  Remarks <- excdf[,"Remarks"]
-                        VL <-  sapply(X=1:N, function(j){VLf(TeamName[j], excdf[j,"tKey"], tkeydf, cType[j], pos1[j])}) 
-                        VLRemarks <- sapply(X=1:N, function(j){VLRf(VL[j])}) 
+                  cType <- sapply(X = FIC, FUN = function(x){returnmetaval.f(x, ficmetadf, "cType")})           #require meta
+                  Underlying <- sapply(X = FIC, FUN = function(x){returnmetaval.f(x, ficmetadf, "Underlying")}) #require meta
+                  Currency <- sapply(X = FIC, FUN = function(x){returnmetaval.f(x, ficmetadf, "Currency")})     #meta
+                  kPrice <- sapply(X = FIC, FUN = function(x){returnmetaval.f(x, ficmetadf, "kPrice")})         #meta
+            pos1 <- rawdf[, "pos1"]
+            cff <- sapply(X = 1:N, FUN = function(j){  cff.f(cType[j], pos1[j])  })
+            Units <- round(rawdf[,"Units"],0)
+                  tDate <- sapply(X = FIC, FUN = function(x){returnmetaval.f(x, ficmetadf, "tDate")})    #meta
+                  mDate <- sapply(X = FIC, FUN = function(x){returnmetaval.f(x, ficmetadf, "mDate")})    #meta
+                  tKey <- substr(rawdf[,"tKey"], 4, 7)
+            Remarks <- rawdf[,"Remarks"]
+            VL <-  sapply(X = 1:N, function(j){  v1 <- VLandVLRexc.v2.f(TeamName[j], rawdf[j,"tKey"], tkeydf, cType[j], pos1[j], Units[j]);  v1[1]   }) 
+            VLRemarks <- sapply(X = 1:N, function(j){  v1 <- VLandVLRexc.v2.f(TeamName[j], rawdf[j,"tKey"], tkeydf, cType[j], pos1[j], Units[j]);  v1[2]   }) 
       
       #output fulldf
-      data.frame(TrackNo, classf, FIC, rClass, sClass, TeamName, cParty, 
-            cType, Underlying, Currency, kPrice, 
-            pos1, Units, tDate, mDate, tKey, Remarks,
-            VL, VLRemarks)
-}
-
-#CUTOFF function: Cutoff at the n-1 transactions, where the nth transaction' remarks = "cutoffapril"
-subcutdf_f <- function(excfulldf){
-      rem1 <- excfulldf[, "Remarks"]
-      rem2 <- gsub(tolower(rem1), pattern = "[[:space:]]", replacement = "")
-      if("cutoffapril" %in% rem1){
-            nx <- grep("cutoffapril", rem2)
-            excfulldf[1:(nx-1),]
-      }else{
-            excfulldf
-      }
-}
-
-#return the value of the desired variable, input: FIC, metadf, variablename
-exc_valf <- function(FIC, metadf, vname){
-      uu <- metadf[,"FIC"] == FIC
-      #vname can take: Underlying, Currency, kPrice, tDate, mDate
-      tryCatch(metadf[uu, vname], error = function(e){NA})
+      data.frame(TrackNo, classf, FIC, TeamName, cParty, 
+                  cType, Underlying, Currency, kPrice, 
+                  pos1, cff, Units, 
+                  tDate, mDate, tKey, 
+                  Remarks, VL, VLRemarks, stringsAsFactors = F)
 }
 
 #check validitiy (EXC)
-VLf <- function(tName, tKey, tKeydf, cType, pos1){
-      teamname1 <- tKeydf[, "TeamName"]
-      teamname1 <- gsub(tolower(teamname1), pattern = "[[:space:]]", replacement = "")     
-      tname2 <- gsub(tolower(tName), pattern = "[[:space:]]", replacement = "") 
-            uu <- teamname1 == tname2
-            tkey1 <- tKeydf[uu, "tKey"]
-            #invalid if wrong trading key
-            if(!(tKey == tkey1)){
-                  0
-            #invalid if short bond
-            }else if(cType == "Bond" & !(pos1 == "Long")){
-                  0
-            }else{
-                  1
-            }
-}
+VLandVLRexc.v2.f <- function(TeamName.c, tKey.c, tkey.df, cType.c, pos1.c, Units.c){
 
-#return validitiy remarks
-VLRf <- function(vl){
-      if(vl==1){"OK"}else{"Invalid Trading Key or Short Bond"}
-}
-
-#general: TRACKNO function
-trackno_f <- function(fulltrandf){
-      trackv <- rep(1, nrow(fulltrandf))
-      yearuni <- as.integer(unique(fulltrandf[,"tDate"]))
-      classfuni <- unique(fulltrandf[,"classf"])
-      for(yrr in yearuni){
-            for(clf in classfuni){
-                  Y <- fulltrandf[,"tDate"] == yrr; Z <- fulltrandf[,"classf"] == clf
-                  nt <- length(trackv[Y & Z])
-                  start <- yrr+100; mid <- substr(clf, 1,3)
-                  trackv[Y & Z] <- sapply(1:nt, FUN = function(j){
-                        paste0(start, mid, (1000+j))      
-                  })
-            }
+      tryCatch({
+      allteamname.v <- tkey.df[, "TeamName"]
+            uu <- allteamname.v %in% TeamName.c 
+            correct.tkey <- tkey.df[uu, "tKey"]
+      
+      if(!(tKey.c == correct.tkey)){ #invalid if wrong trading key
+            c(0, "Wrong Trading Key")
+      }else if(cType.c == "Bond" & !(pos1.c == "Long")){ #invalid if short bond
+            c(0, "Short Bond is NOT allowed")
+      }else if(Units.c < 0){
+            c(0, "Negative Number of Units")
+      }else{
+            c(1, "OK")
       }
-      #output: track number vector
-      trackv
+}, error = function(e){
+      print("VLandVLRexc.v2.f - error in getting VL and VLRemarks under EXCfullconv.f")
+})
       
 }
+
+

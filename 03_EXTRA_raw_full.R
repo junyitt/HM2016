@@ -1,87 +1,89 @@
 #03_EXTRA_raw_full.R
-#############
-startcut.f.dir <- "C:/Users/User/Google Drive/z_ALLHM/"
-setwd(startcut.f.dir); source("01A_startcutoff_f.R")
-########
-
 
 ######################
       #4_ConvUser EXTRA
 ######################
 
 #DIR
-EXTRArawdir <- "C:/Users/User/OneDrive/1_Form_EXTRA"
-if(real_run == T){EXTRArawdir<-gsub("1", "f", EXTRArawdir)}else{}
+#maincode.dir, raw_EXTRA.dir, meta.dir
 
-EXTRAfdir <- "C:/Users/User/Google Drive/z_ALLHM/"
-tkeymetadir <- "C:/Users/User/Google Drive/z_ALLHM/v5M_meta/"
-cvmetadir <- "C:/Users/User/Google Drive/z_ALLHM/v5M_meta/"
-      excficmetadir <- "C:/Users/User/Google Drive/z_ALLHM/v5.0_7_Instruments"
+#FUNCTION (general) Required
+#importmeta.f, cutoff.f ;returnmetaval.f
 
-#META-tkeydf
-      setwd(tkeymetadir)
-      tkeydf <- as.data.frame(read_excel("meta-tradingkey.xlsx"))
-#META-yr4-rr and cv, covariance matrix of 4 assets
-      setwd(cvmetadir)
-      rr <- as.data.frame(read_excel("meta-extra-4-harrym.xlsx", sheet = 1)); rr <- t(t(rr[,2]))
-      cv <- as.matrix(as.data.frame(read_excel("meta-extra-4-harrym.xlsx", sheet = 2)))
-#META-FIC
-      setwd(excficmetadir)
-      excficmetadf <- as.data.frame(read_excel("meta-FIC-EXC.xlsx"))
-      
-#FUNCTION
-setwd(EXTRAfdir)
+      #ENVIRONMENT Output
+      #tkeydf, ficmeta.df
+      #maxsharpe.c, rr, cv
+            #$spectran.df, extrafulltran.df
+
+#FUNCTION (internal)  
+      #VLandVLR.EXTRA.v2.f, maxfour.f, check.tkey.f
+      #outbd.df.f
+      #compsharpe, maxsharpe, validrawdf.f
+      #conv1extra.f,conv2extra.f, conv3extra.f, conv4extra.f
+
+setwd(maincode.dir)
 source("03_01_EXTRA_functions.R")
 
+
+#####################
+# full conv extra
+#####################
+#META-tkeydf
+      tkeydf <- importmeta.f(meta.dir, "meta-tradingkey.xlsx")
+                             
+#META-yr4-rr and cv, covariance matrix of 4 assets
+      setwd(meta.dir)
+      rr <- as.data.frame(read_excel("meta-extra-4-harrym.xlsx", sheet = 1)); rr <- t(t(rr[,2]))
+      cv <- as.matrix(as.data.frame(read_excel("meta-extra-4-harrym.xlsx", sheet = 2)))
+      
+#META-FIC
+      ficmeta.df <- importmeta.f(meta.dir, "meta-FIC.xlsx")
+      
 {
-      #Create empty extrafulltrandf
-            fullvar1 <- c("TrackNo","classf", "FIC", "rClass", "sClass", "TeamName", "cParty", 
-                          "cType", "Underlying", "Currency", "kPrice", 
-                          "pos1", "Units", "tDate", "mDate", "tKey", "Remarks",
-                          "VL", "VLRemarks")
+      #Create empty extrafulltran.df
+            fullvar1 <- fullvar.f()
             #create empty vector for fullvar1
             for(i in 1:length(fullvar1)){assign(fullvar1[i], value = vector())}; 
-            extrafulltrandf <- as.data.frame(cbind(TrackNo, classf, FIC, rClass, sClass, TeamName, cParty, 
-                                    cType, Underlying, Currency, kPrice, 
-                                    pos1, Units, tDate, mDate, tKey, Remarks,
-                                    VL, VLRemarks))
-      #create empty spectrandf
-            fullvar2 <- c("ExtraName", "tDate", "Service", "tName", "tKey", "Remarks")
+            extrafulltran.df <-   data.frame(TrackNo, classf, FIC, TeamName, cParty, 
+                                            cType, Underlying, Currency, kPrice, 
+                                            pos1, cff, Units, 
+                                            tDate, mDate, tKey, 
+                                            Remarks, VL, VLRemarks, stringsAsFactors = F)
+      #create empty spectran.df
+            fullvar2 <- c("ExtraName", "tDate", "Service", "TeamName", "tKey", "Remarks")
             for(i in 1:length(fullvar2)){assign(fullvar2[i], value = vector())}; 
-            spectrandf <- as.data.frame(cbind(ExtraName, tDate, Service, tName, tKey, Remarks))
+            spectran.df <- data.frame(ExtraName, tDate, Service, TeamName, tKey, Remarks, stringsAsFactors = F)
             
-      } #create empty df
+} #create empty df
 
-#set yy
-# yy <- 0
-# yy <- 4
+##Import EXTRAraw.df      
 if(yy %in% c(0,1)){
-      setwd(EXTRArawdir)
-      EXTRArawdfa <- as.data.frame(read_excel(paste0("EXTRA_", yy, "A.xlsx"))); EXTRArawdfa <- startcutoff.f(EXTRArawdfa) ##Added startjan
-      EXTRArawdfb <- as.data.frame(read_excel(paste0("EXTRA_", yy, "B.xlsx"))); EXTRArawdfb <- startcutoff.f(EXTRArawdfb) ##Added startjan
-      EXTRArawdf <- rbind(EXTRArawdfa, EXTRArawdfb)
+      setwd(raw_EXTRA.dir)
+      EXTRArawdfa <- as.data.frame(read_excel(paste0("EXTRA_", yy, "A.xlsx"))); EXTRArawdfa <- cutoff.f(EXTRArawdfa) ##Added startjan
+      EXTRArawdfb <- as.data.frame(read_excel(paste0("EXTRA_", yy, "B.xlsx"))); EXTRArawdfb <- cutoff.f(EXTRArawdfb) ##Added startjan
+      EXTRAraw.df <- rbind(EXTRArawdfa, EXTRArawdfb)
 }else{
-      setwd(EXTRArawdir)
+      setwd(raw_EXTRA.dir)
       EXTRArawdf <- as.data.frame(read_excel(paste0("EXTRA_", yy, ".xlsx")))
-      EXTRArawdf <- startcutoff.f(EXTRArawdf) ##Added startjan
+      EXTRAraw.df <- cutoff.f(EXTRArawdf)
 }
 
+##CONVERT EXTRAraw.df to spectran.df/extrafulltran.df
 if(yy %in% c(0,1)){ 
       #belongs to yr 00, 01, -- PV, PV,  Extra Events ->> special treatment > SPEC DF
-      spectrandf <- conv1extra_f(EXTRArawdf, tkeydf)
+      spectran.df <- conv1extra.f(EXTRAraw.df, tkeydf)
       
 }else if(yy %in% c(2)){
       #yr2 - arbitrage - FIC for options
-      setwd(EXTRAfdir)
-      source("03_01_EXTRA_functions.R")
-      extrafulltrandf <- conv2extra_f(EXTRArawdf, excficmetadf, tkeydf)
+      extrafulltran.df <- conv2extra.f(EXTRAraw.df, ficmeta.df, tkeydf)
       
 }else if(yy %in% c(3)){
       #yr3 - bond
-      extrafulltrandf <- conv3extra_f(EXTRArawdf, tkeydf)
+      extrafulltran.df <- conv3extra.f(EXTRAraw.df, tkeydf)
             
 }else if(yy %in% c(4)){
       #yr4 - harry m
-      extrafulltrandf <- conv4extra_f(EXTRArawdf, tkeydf)
+      extrafulltran.df <- conv4extra.f(EXTRAraw.df, tkeydf, rr, cv)
+      maxsharpe.c <<- maxsharpe(rr, cv)
 }
 
