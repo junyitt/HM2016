@@ -86,6 +86,22 @@ importbalsh.f <- function(meta.dir, fulltran.dir, yy){
       balsh_y
 }
 
+#import final score breakdown
+importscorebr.f <- function(meta.dir, fulltran.dir, yy){
+      #read balance sheet
+      {
+            if(yy == 0){
+                  setwd(meta.dir)
+                  scorebr.td.df <- as.data.frame(read_excel("meta-scorebreakdown-td-0.xlsx"))
+            }else{
+                  setwd(fulltran.dir)
+                  scorebr.td.df <- read.csv(  paste0("aa-scorebreakdown-td-", yy, ".csv")   )
+            }
+            colnames(scorebr.td.df) <- c("TeamName", "Hedging", "CashFlow", "ExtraEvent", "NAV", "Year")
+      }
+      scorebr.td.df
+}
+
 #fullvar.f 
 fullvar.f <- function(){
       

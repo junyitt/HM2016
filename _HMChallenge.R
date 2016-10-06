@@ -12,10 +12,11 @@ source("_HM_alldirectory.R"); source("_HM_allfunction.R")
 
 ##END OF YEAR COMPUTE:
 
-# real_run <- T
 yy <- 0
-setwd(MAINCODEDIR)
-source("_HMProcessFlow.R")
+setwd(maincode.dir); source("_HMProcessFlow.R")
+setwd(maincode.dir); source("_HMProcessFlow_Report_2.R")
+
+# setwd(maincode.dir); source("_HMFinalReport_3.R")
 
 # setwd(MAINCODEDIR)
 # source("D_DistributeDoc.R")

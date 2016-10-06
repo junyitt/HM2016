@@ -1,45 +1,47 @@
 #A1_01_Core.R
-#<<<click below me: 3rd line hide all <<<
 
-      #DIR-f
-      A1f.dir <- "C:/Users/User/Google Drive/z_ALLHM"
+#DIR #maincode.dir
+
+
+#INTERNAL functions ##
+setwd(maincode.dir); source("A1_01_Reportf.R")
       
-      #source functions
-      setwd(A1f.dir); source("A1_01_Reportf.R")
-      
-      #generate team names
-      a <- paste0("Alpha ", 1:6); b <- paste0("Beta ", 1:6); teamname12 <- c(a,b)
+################################################################
 
+#generate team names
+teamname12 <- teamname.f()
 
-#A1 Report - 01 - Core  
+########################
+##A1 Report - 01 - Core  
+########################
 {
-
-#output c_list
 cReport_list <- lapply(teamname12, FUN = function(x){ #return list of core report, where list[[1]] is the core report df for team Alpha 1 and so on
       core.f(x, fdf8_td, yy)
 }) 
-      
 } #cReport_list
       
+#########################################
 #A1 Report - 02 - Scenario transactions
+#########################################
 {
-
-#output s_list      
 sReport_list <- lapply(teamname12, FUN = function(x){
                               scenario.f(x, fdf8_td, yy)
                         })
 } #sReport_list
 
+###########################################
 #A1 Report - 03 - Extra transactions
+###########################################
 {
-   
-eReport_list <- lapply(teamname12, FUN = function(x){
-      extraR.f(x, fdf8_td, yy)
-}) #output s_list  
-      
-} #eReport_list
+      eReport_list <- lapply(teamname12, FUN = function(x){
+            extraR.f(x, fdf8_td, yy)
+      }) 
+    
+}  #output eReport_list 
 
+###########################################
 #A1 Report - 04 - Other Money Transactions? Hints/Tips
+###########################################
 {
 # 
 # #need to select columns that will be DISPLAYED
@@ -61,46 +63,21 @@ eReport_list <- lapply(teamname12, FUN = function(x){
 #       extraR.f(x, fdf8_td, yy)
 #       
 # })
-}
+} #NULL for now
 
+###########################################
 #A1 Report - 05 - ALL Your transactions
+###########################################
 {
-
-#output s_list      
 uReport_list <- lapply(teamname12, FUN = function(x){
       uR.df <- userR.f(x, fdf8_td)
       uR.df
 })
 } #uReport_list
 
-#A1 Report - 06 - Balance Sheet #clean code later
-{
-      #need bgn6 function - cff_f: DIR
-      bgn6f.dir <- "C:/Users/User/Google Drive/z_ALLHM/"
-      setwd(bgn6f.dir); source("60_01_BGN1Functions.R")
-      
-      #DIR-balance sheet
-      balsh0.dir <- "C:/Users/User/Google Drive/z_ALLHM/v5M_meta"
-      balshy.dir <- "C:/Users/User/OneDrive/yy_YearlyBalanceSheet"
-      
-      #read balance sheet
-      {
-            if(yy == 0){
-                  setwd(balsh0.dir)
-                  balsh_y <- as.data.frame(read_excel("meta-balancesheet-0.xlsx"))
-            }else{
-                  setwd(balshy.dir)
-                  balsh_y <- read.csv(paste0("meta-balancesheet-", yy, ".csv"))
-            }
-            colnames(balsh_y) <- c("TeamName", "PPE", "FinAsset", "Cash", "ShareCap", "RE", "Loan", "NAV")
-      } #balsh_y
-      
-      balsh_new_yy2 <- newbs.df.f(balsh_y, fdf8_td , teamname12, fdf_y7); 
-      setwd(balshy.dir); write.csv(balsh_new_yy2, paste0("meta-balancesheet-", yy+1, ".csv"), row.names = F)
-
-}  #balsh_new_yy2 (df); old: balsh_y
-
-#A1 Report - 07 - Hedging Evaluation
+###########################################
+#A1 Report - 07 - Hedging Evaluation ######OLD
+###########################################
 {
       #DIR-80_01_END1Functions.R 
       e80f.dir <- "C:/Users/User/Google Drive/z_ALLHM"
@@ -204,7 +181,9 @@ uReport_list <- lapply(teamname12, FUN = function(x){
       
 } #score_hedge_byteam (vector)
 
+###########################################
 #A1 Report - 08 - Extra Event Evaluation - Score
+###########################################
 {
       #DIR-spec0,1
       spec.dir <- "C:/Users/User/OneDrive/yy_YearlyFullTran" 
@@ -241,14 +220,18 @@ uReport_list <- lapply(teamname12, FUN = function(x){
       
 } #score.extra
       
+###########################################
 #A1 Report - 09 - Cash Evaluation
+###########################################
 {
       score.cash <- sapply(teamname12, FUN = function(j){
             score.cash.f(fdf8_td, yy, j)  
       })
 } #score.cash
 
+###########################################
 #A1 Report - 09b - NAV 
+###########################################
 {
       if(yy == 4){
             nav_v <- balsh_new_yy2[,"NAV"]
@@ -260,7 +243,9 @@ uReport_list <- lapply(teamname12, FUN = function(x){
       }
 }#score.NAV
 
+###########################################
 #A1 Report - 10 - Total Score Breakdown
+###########################################
 {
       
       #DIR-scorebreakdown

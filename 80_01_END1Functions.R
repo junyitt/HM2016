@@ -20,6 +20,8 @@ end3.td.df.f <- function(bgn2.td.df, meta.und.price.df, meta.bonde.df, yy){
                         if(tDate[j] < yy + 1 & yy + 1 <= mDate[j]){
                               sT[j] <- und.price.f(Underlying[j], yy+1, meta.und.price.df)
                               exsT[j] <- und.price.f(Currency[j], yy+1, meta.und.price.df)  
+      # for(i in 1:length(colName)){assign(  paste0(colName[i],".c") , value = bgn2.td.df[j, colName[i]])}
+      # sT.c <- sT[j]; exsT.c <- exsT[j]
                                     proT[j] <- proT.f(FIC[j], cType[j], cff[j], Units[j], pro0[j], kPrice[j], tDate[j], mDate[j], sT[j], exsT[j], meta.bonde.df, yy)
                                     #proT[j] <- proT.f(FIC.c, cType.c, cff.c, Units.c, pro0.c, kPrice.c, tDate.c, mDate.c, sT.c, exsT.c, meta.bonde.df, yy)
                                     mvT[j] <-  mvT.f(FIC[j], cType[j], cff[j], Units[j], pro0[j], kPrice[j], tDate[j], mDate[j], sT[j], exsT[j], meta.bonde.df, yy)
@@ -123,7 +125,7 @@ mvT.f <- function(FIC.c, cType.c, cff.c, Units.c, pro0.c, kPrice.c, tDate.c, mDa
                   mvex <- pay1*(1-(1+r1)^(-1*n2))/(r1) #mv in foreign currency
                   cff.c*exsT.c*mvex #pro >(-cff) is opposite of mv -> cff
       }else if(u2){
-            uu <- meta.bonde.df[,"FIC"] %in% FIC
+            uu <- meta.bonde.df[,"FIC"] %in% FIC.c
             if(yy+1 == 3){
                   0 #unnecessary
             }else if(yy+1 == 4){

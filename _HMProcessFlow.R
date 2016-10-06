@@ -1,7 +1,7 @@
-#Section 4 to 8 (fdf)   
-#LINE 9  #LINE 43  #LINE 84  #LINE 95  #LINE 116
+#_HMProcessFlow.R
+#LINE 9  #LINE 45  #LINE 84  #LINE 95  #LINE 116
+#Section 4 to 9 (fdf)   
 
-#NEXT: FIX 6_Routine and others... use read_excel and write_excel
       
 ############################
 # 4_ConvUser
@@ -106,7 +106,7 @@ f0df.csv.files <- subfiles.td.f(f0df.csv.files, yy) #subset 0:yy  #subset up to 
       setwd(maincode.dir)
       source("70_BGNstloan.R") #output fdf_y7
       
-}#output: bgn2.td.df
+} #output: bgn2.td.df
 
 ############################
 # 8_ENDcalc
@@ -117,13 +117,21 @@ f0df.csv.files <- subfiles.td.f(f0df.csv.files, yy) #subset 0:yy  #subset up to 
       end3.td.df[,"TrackNo"] <- trackno.f(end3.td.df)
             #BACKUP:
             setwd(fulltran.dir); write.csv(end3.td.df, paste0("b_end3_td_", yy, ".csv"), row.names = F)
-} #output: end3.td.df
+} 
+#output: end3.td.df
+#"b_end3_td_yy.csv"
 
-View(end3.td.df)
-
+      # View(end3.td.df)
+      
 ############################
 # 9_balsheet_yy+1, write.csv(balsh_y)
 ###########################
+{
+setwd(maincode.dir); source("90_Balsh.R") #output: balsh_y2.df
+setwd(fulltran.dir); write.csv(balsh_y2.df, paste0("meta-balancesheet-", yy+1, ".csv"), row.names = F)
+} #balsh_y2.df 
+#meta-balancesheet-yy2.csv"
 
+      # View(balsh_y2.df)
 
 

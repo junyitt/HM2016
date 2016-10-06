@@ -238,7 +238,12 @@ validrawdf.f <- function(EXTRAraw.df, tkeydf){
       
 conv4extra.f <- function(EXTRAraw.df, tkeydf, rr, cv){
 if(nrow(EXTRAraw.df) == 0){
-      EXTRAraw.df
+      for(i in 1:length(fullvar1)){assign(fullvar1[i], value = vector())}; 
+      data.frame(TrackNo, classf, FIC, TeamName, cParty, 
+                 cType, Underlying, Currency, kPrice, 
+                 pos1, cff, Units, 
+                 tDate, mDate, tKey, 
+                 Remarks, VL, VLRemarks, stringsAsFactors = F)
 }else{
       edf <- validrawdf.f(EXTRAraw.df, tkeydf); n2 <- nrow(edf) #valid entry extrarawdf
       
