@@ -3,7 +3,7 @@
 source("C:/Users/User/Google Drive/r_Rfunction/_myCode.R")
 library(reshape2); library(knitr) #install.packages(rmarkdown);
 library(ggplot2); library(gridExtra); require(cowplot)
-
+library(xlsx)
 
 #CONVERT FACTOR CLASS TO CHARACTER CLASS
 convclass.f1 <- function(df){

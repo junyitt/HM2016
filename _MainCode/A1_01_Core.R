@@ -16,18 +16,18 @@ teamname12 <- teamname.f()
 ########################
 {
 cReport_list <- lapply(teamname12, FUN = function(x){ #return list of core report, where list[[1]] is the core report df for team Alpha 1 and so on
-      core.f(x, fdf8_td, yy)
+      core.f(x, end3.td.df, yy)
 }) 
 } #cReport_list
       
-#########################################
-#A1 Report - 02 - Scenario transactions
-#########################################
-{
-sReport_list <- lapply(teamname12, FUN = function(x){
-                              scenario.f(x, fdf8_td, yy)
-                        })
-} #sReport_list
+# #########################################
+# #A1 Report - 02 - Scenario transactions
+# #########################################
+# {
+# sReport_list <- lapply(teamname12, FUN = function(x){
+#                               scenario.f(x, end3.td.df, yy)
+#                         })
+# } #sReport_list
 
 ###########################################
 #A1 Report - 03 - Extra transactions
@@ -51,7 +51,7 @@ sReport_list <- lapply(teamname12, FUN = function(x){
 # #function - return relevant scenario transactions, with subsetted variables  
 # extraR.f <- function(tName, df, yy){
 #       u <- df[,"TeamName"] == tName
-#       u1 <- df[, "classf"] == "Extra"
+#       u1 <- df[, "classf"] == "EXTRA"
 #       yy2 <- yy+1; u2 <- df[, "tDate"] < yy2 & yy2 <= df[,"mDate"]
 #       
 #       #outdf: 

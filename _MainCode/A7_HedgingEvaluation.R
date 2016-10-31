@@ -20,7 +20,7 @@ tryCatch({  #catch TEAM NAME
 #########LOOP THROUGH TEAM NAME##########
 team.asset.payoffdf.list <- lapply(teamname12, FUN = function(TeamName.c){ 
       TeamName.c <<- TeamName.c
-      m0 <- end3.td.df[,"classf"] %in% c("Scenario", "Extra", "EXC", "OTC")      
+      m0 <- end3.td.df[,"classf"] %in% toupper(c("SCENARIO", "EXTRA", "EXC", "OTC"))
       m1 <-  end3.td.df[,"TeamName"] %in% TeamName.c
 
       tryCatch({  #catch Assets    
@@ -88,5 +88,5 @@ team.asset.payoffdf.list <- lapply(teamname12, FUN = function(TeamName.c){
       
       
 }, error = function(e){
-      print(TeamName.c)     
+      print(  paste0("A7_HedgingEvaluation.R - team problem at ", TeamName.c)  )     
 }) #team.asset.payoffdf.list

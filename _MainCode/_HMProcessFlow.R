@@ -1,4 +1,8 @@
 #_HMProcessFlow.R
+##dependencies
+#01_EXC_raw_full.R, 02_OTC_raw_full.R, 03_EXTRA_raw_full.R, 50_RoutineAdd.R
+#60_BGN1.R, 70_BGNstloan.R, 80_END1.R, 90_Balsh.R
+
 #LINE 9  #LINE 45  #LINE 84  #LINE 95  #LINE 116
 #Section 4 to 9 (fdf)   
 
@@ -37,7 +41,7 @@ extrafulltran.df <- convclass.f1(extrafulltran.df)
             
 } 
 #ufull_yy.csv #"uspec_yy.csv"
-#output: ufull.yy.df, uspec.yy.df  
+#output: ufull.yy.df, uspec.yy.df    #maxsharpe.c
 
 ############################
 # 5_Routine
@@ -115,6 +119,7 @@ f0df.csv.files <- subfiles.td.f(f0df.csv.files, yy) #subset 0:yy  #subset up to 
       setwd(maincode.dir)
       source("80_END1.R")
       end3.td.df[,"TrackNo"] <- trackno.f(end3.td.df)
+      end3.td.df[,"classf"] <- toupper(end3.td.df[,"classf"])
             #BACKUP:
             setwd(fulltran.dir); write.csv(end3.td.df, paste0("b_end3_td_", yy, ".csv"), row.names = F)
 } 
@@ -129,7 +134,7 @@ f0df.csv.files <- subfiles.td.f(f0df.csv.files, yy) #subset 0:yy  #subset up to 
 {
 setwd(maincode.dir); source("90_Balsh.R") #output: balsh_y2.df
 setwd(fulltran.dir); write.csv(balsh_y2.df, paste0("meta-balancesheet-", yy+1, ".csv"), row.names = F)
-} #balsh_y2.df 
+} #balsh_y,  balsh_y2.df  
 #meta-balancesheet-yy2.csv"
 
       # View(balsh_y2.df)

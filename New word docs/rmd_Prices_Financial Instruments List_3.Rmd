@@ -1,0 +1,122 @@
+---
+title: "Prices"
+author: "HedgeMaster Challenge 2016"
+date: "November 13, 2016"
+output: pdf_document
+---
+
+```{r, echo = FALSE, results='hide'}
+suppressMessages({
+      library(knitr)
+      MAINCODEDIR <- "C:/Users/User/Google Drive/z_ALLHM/_MainCode"
+      setwd(MAINCODEDIR)
+      source("_HM_allfunction.R")
+      
+            
+})
+
+meta.dir <- "C:/Users/User/Google Drive/z_ALLHM/6.0_meta";
+
+      yr <- 3
+
+
+elink <- c("https://1drv.ms/xs/s!AuUxik9_I7qcjiBQfnoqJg3zA6sP",
+           "https://1drv.ms/xs/s!AuUxik9_I7qcjiO8udmmD0eQQu9k",
+           "https://1drv.ms/xs/s!AuUxik9_I7qcjiWKEYvWr8Do8hmA", 
+           "https://1drv.ms/xs/s!AuUxik9_I7qcjiiW9uRcOHZ86EU3",
+           "https://1drv.ms/xs/s!AuUxik9_I7qcjidakuac0BAtb0-u")
+
+```
+
+```{r, echo = F, fig.width= 1000}
+setwd(meta.dir)
+undraw.df <- as.data.frame(read_excel("meta-underlyingprice.xlsx"))
+
+UnderlyingAsset <- colnames(undraw.df)[2:9]
+if(yr %in% 0){
+      Price0 <- rep(NA, 8)
+}else{
+      Price0 <- as.numeric(undraw.df[yr, 2:9])
+}
+Price1 <- as.numeric(undraw.df[yr+1, 2:9])
+Currency <- c("USD", "MYR", "MYR", "MYR", "MYR", NA, NA, NA)
+Description <- c("GOL = Gold", "CRU = Crude Oil", "PAL = Palm Oil",
+                 "USD = US Dollar", "EUR = Euro Dollar", "1 year Malaysia T-Bill rate",
+                 "1 year US T-Bill rate", "1 year Euro zone T-Bill rate")
+und.df <- data.frame(UnderlyingAsset, Price0, Price1, Currency)
+und2.df <- data.frame(UnderlyingAsset, Description)
+
+c2 <- paste0("Price per unit \\\n(END of YEAR ", yr-1, ")")
+c3 <- paste0("Price per unit \\\n(END of YEAR ", yr, ")")
+
+colnames(und.df) <- c("Underlying \\\nAsset/Indicators", c2,c3, "Currency \\\nDenomination")
+colnames(und2.df) <- c("Underlying \\\nAsset/Indicators", "Description")
+
+
+```
+
+#Prices
+##End of Year `r yr` 
+
+###Prices of non-tradeable asset/Indicators
+```{r, echo=FALSE}
+pander(und.df, keep.line.breaks = TRUE)
+pander(und2.df, keep.line.breaks = TRUE)
+```
+
+###EXCHANGE (EXC) - Prices of tradeable derivatives/contracts
+```{r, echo = FALSE}
+setwd(meta.dir)
+FIC.df <- as.data.frame(read_excel("EXConly.xlsx")); a <- colnames(FIC.df); a[6] <- "Price"; colnames(FIC.df) <- a
+subFIC.df <- FIC.df[FIC.df[, "tDate"] %in% yr, c(1:6, 9,10)]
+
+
+kable(subFIC.df)
+
+#####################
+
+msg.f <- function(cType.c, Price.c, Underlying.c, Currency.c, kPrice.c, tDate.c, mDate.c){
+      
+      if(cType.c %in% "Bond"){
+            paste0("Risk-free zero coupon bond with face value of RM ",  kPrice.c, ", matures at the End of Year ", mDate.c, ", priced at RM ", Price.c, " as at the end of Year 0")
+            
+      }else if(cType.c %in% c("Call Option", "Put Option")){
+            
+            paste0(cType.c, " on the underlying asset ", Underlying.c, ", with a strike price of ", Currency.c, " ", kPrice.c,", matures and settle in cash at the end of Year ", mDate.c, ". Premium of the ", cType.c,  " is ", Currency.c, " ", Price.c, ", exclusive of 2% transaction cost on total premium.")
+            
+      }else if(cType.c %in% "Forward"){
+            paste0("Forward contract on the underlying asset ", Underlying.c, " with a forward price of RM 4.78 offered by a 'third party' company, matures and settles in cash at the end of Year ", mDate.c , ". The cost of initiating this forward contract with 'third party' company is 2% of the notional value of the contract.")
+      }
+
+}
+
+FIC <- subFIC.df[,"FIC"]
+FullDescription <- sapply(1:length(subFIC.df[,"cType"]), FUN = function(j){
+      cType.c <- subFIC.df[j, "cType"]
+      Price.c <- subFIC.df[j, "Price"]
+      Underlying.c <- subFIC.df[j, "Underlying"]
+      Currency.c <- subFIC.df[j, "Currency"]
+      kPrice.c <- subFIC.df[j, "kPrice"]
+      tDate.c <- subFIC.df[j, "tDate"]
+      mDate.c <- subFIC.df[j, "mDate"]
+      
+            msg.f(cType.c, Price.c, Underlying.c, Currency.c, kPrice.c, tDate.c, mDate.c)
+                  
+})
+desFIC.df <- data.frame(FIC, FullDescription)
+
+# pander(desFIC.df, keep.line.breaks = TRUE)
+
+ pander(desFIC.df)
+
+
+```
+
+More information on abbreviation used:  
+*<https://1drv.ms/b/s!AuUxik9_I7qcngWSveVIlflhDT4R>*
+
+
+You may trade contracts under EXC here:  
+**<`r elink[yr+1]`>**
+
+

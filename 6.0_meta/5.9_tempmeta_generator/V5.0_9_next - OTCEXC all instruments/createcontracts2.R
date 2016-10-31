@@ -1,6 +1,6 @@
 source("C:/Users/User/Google Drive/r_Rfunction/_myCode.R")
 
-setwd("C:/Users/User/Google Drive/z_ALLHM/V5.0_9_next - OTCEXC all instruments")
+setwd("C:/Users/User/Google Drive/z_ALLHM/6.0_meta/5.9_tempmeta_generator/V5.0_9_next - OTCEXC all instruments")
 
 source("optionscalc.R")
 
@@ -40,7 +40,7 @@ vol <- sapply(instrument, FUN = function(i){
             #loop i for year
             for(i in 1:nrow(vol)){
                   s01 <- df[i,rawL[j]] 
-                  r1 <- df[i,rateL[j]]
+                  r1 <- log(1+df[i,rateL[j]])
                   s1 <- vol[i,rawL[j]]
                        
                   #loop across K loop factor

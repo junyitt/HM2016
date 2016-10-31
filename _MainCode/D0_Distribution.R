@@ -71,7 +71,7 @@ temp2 <- lapply(teamname12, FUN = function(tname){
       from.dir <- instrument.dir
       setwd(from.dir)
       doc <- "Scenario"
-      filezname <- paste0("Prices_Financial Instruments List_", yy)
+      filezname <- paste0("Prices_Financial_Instruments_List_", yy)
       filetocopy <- list.files(from.dir, pattern = filezname)
       file.copy(from = filetocopy, to.dir, overwrite = T)
       

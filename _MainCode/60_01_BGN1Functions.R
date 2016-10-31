@@ -93,11 +93,14 @@ tfee.f <- function(cType.c, classf.c, Units.c, pro0.c, ss0.c, exss0.c){
       u1 <- cType.c %in% c("Forward") & classf.c %in% "EXC"
 #m1:  EXC CL & PT Options: 2% of pro0
       u2 <- cType.c %in% c("Call Option", "Put Option") & classf.c %in% "EXC"
-
-            
+#m3: Extra CL & PT
+      u3 <- cType.c %in% c("Call Option-E", "Put Option-E") & classf.c %in% "EXTRA"
+      
       if(u1){ #EXC FWD
             abs(Units.c*ss0.c*exss0.c*0.02)
       }else if(u2){ #EXC OPTIONS
+            abs(pro0.c*0.02)
+      }else if(u3){
             abs(pro0.c*0.02)
       }else{
             0

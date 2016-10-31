@@ -1,0 +1,76 @@
+---
+title: "Extra Event"
+author: "HedgeMaster Challenge 2016"
+date: "November 13, 2016"
+output: pdf_document
+---
+
+```{r, echo = FALSE}
+library(knitr)
+yr <- paydate <- 0
+sector <- "Alpha"
+eventname <- "ProService A"; eventname.full <- paste0(eventname, " (", sector, ")")
+servicename.v <- c("Service A1", "Service A2", "Service A3")
+upfrontcost.v <- c("RM 930,000.00", "RM 800,000.00", "RM 810,000.00")
+      EndofYear <- 1:5
+            CostReductionPerUnit1 <- c(200,200,300,300,300)
+            CostReductionPerUnit2 <- c(10,10,20,20,20)      
+            CostReductionPerUnit3 <- c(110,110,120,120,120)      
+            
+elink <- "https://1drv.ms/xs/s!AuUxik9_I7qcjjdcEKiI-eTg7LG9"      
+            
+if(sector %in% "Alpha"){
+      note1 <- "Each year, Alpha company will produce 1500 units of GOL, 20000 units of CRU, 3000 units of PAL."
+}else{
+      note1 <- "Each year, Beta company will produce 1500 units of GOL2, 20000 units of CRU2, 3000 units of PAL2."
+}
+
+servA1.df <- data.frame(EndofYear, CostReductionPerUnit = CostReductionPerUnit1 )
+servA2.df <- data.frame(EndofYear, CostReductionPerUnit = CostReductionPerUnit2 )
+servA3.df <- data.frame(EndofYear, CostReductionPerUnit = CostReductionPerUnit3 )
+
+```
+
+#`r eventname.full`
+##End of Year `r yr` 
+
+You have just received a contract offer by ProTech Bhd. The contract offers professional services that would enhance your firm's productivity in terms of lower cost per unit. The following are the list of services:
+
+
+(@) **`r servicename.v[1]`**:
+Professional services that would lower your firm's production cost of GOLD (GOL). The cost reductions per unit (in RM) are as follow:
+
+```{r, echo=FALSE}
+kable(servA1.df,format.args = list(big.marks = ","))
+```
+
+The total upfront cost for this service is `r upfrontcost.v[1]` and is payable at the End of Year `r paydate`.
+
+(@) **`r servicename.v[2]`**:
+Professional services that would lower your firm's production cost of Crude Oil (CRU). The cost reductions per unit (in RM) are as follow:
+
+```{r, echo=FALSE}
+kable(servA2.df,format.args = list(big.marks = ","))
+```
+
+The total upfront cost for this service is `r upfrontcost.v[2]` and is payable at the End of Year `r paydate`.
+
+(@) **`r servicename.v[3]`**: 
+Professional services that would lower your firm's production cost of Palm Oil (PAL). The cost reductions per unit (in RM) are as follow:
+
+```{r, echo=FALSE}
+kable(servA3.df,format.args = list(big.marks = ","))
+```
+
+The total upfront cost for this service is `r upfrontcost.v[3]` and is payable at the End of Year `r paydate`.
+
+###Note: 
+`r note1`
+
+###Link:
+Go to this link and select your choice of service.  
+click: __<`r elink`>__
+
+####Note 2:
+If there are more than one submission from the same team, the latest submission will be considered instead.
+

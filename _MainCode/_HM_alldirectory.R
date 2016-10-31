@@ -1,5 +1,5 @@
 
-maincode.dir <- "C:/Users/User/Google Drive/z_ALLHM/"
+maincode.dir <- "C:/Users/User/Google Drive/z_ALLHM/_MainCode"
 meta.dir <- "C:/Users/User/Google Drive/z_ALLHM/6.0_meta"
 
 onedrive.dir <- "C:/Users/User/OneDrive/"
@@ -12,3 +12,5 @@ raw_EXTRA.dir <- "C:/Users/User/OneDrive/f_Form_EXTRA"
 fulltran.dir <- "C:/Users/User/OneDrive/yy_YearlyFullTran"
 
 finalreport.dir <- "C:/Users/User/OneDrive/W_FinalReport"
+
+distreport.dir <- "C:/Users/User/OneDrive/D_Distribute/R_report"

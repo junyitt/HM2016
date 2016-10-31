@@ -8,7 +8,7 @@ sim61.v.f <- function(tranj.df, yy, testasset.c, meta.bonde.df, meta.und.price.d
       colName <- colnames(tranj.df) 
       for(i in 1:length(colName)){   assign( paste0(colName[i],".c") , value = tranj.df[, colName[i]])   } #input df, then assign each variable to variablename.c
       
-      if(classf.c %in% c("Scenario")){
+      if(classf.c %in% c("SCENARIO")){
             classH <- "Scenario"
       }else{
             classH <- "User"

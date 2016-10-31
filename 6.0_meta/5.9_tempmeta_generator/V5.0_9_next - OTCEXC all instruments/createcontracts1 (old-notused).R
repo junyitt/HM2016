@@ -1,6 +1,6 @@
 source("C:/Users/User/Google Drive/r_Rfunction/_myCode.R")
 
-setwd("C:/Users/User/Google Drive/z_ALLHM/V5.0_9_next - OTCEXC all instruments")
+setwd("C:/Users/User/Google Drive/z_ALLHM/6.0_meta/5.9_tempmeta_generator/V5.0_9_next - OTCEXC all instruments")
 
 df <- as.data.frame(read_excel("meta-underlyingprice.xlsx"))
 
@@ -13,7 +13,8 @@ vol <- sapply(instrument, FUN = function(i){
             set.seed(123+j)
             abs(v[j+1]/v[j]-1)*runif(1,0.8,1.2)
       })
-})
+}) #volatility
+
 
 createins <- c("CRU", "GOL", "PAL", "CRU", "PAL")
 
