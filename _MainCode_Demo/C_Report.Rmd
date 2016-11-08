@@ -1,0 +1,107 @@
+---
+title: "HedgeMaster Challenge 2016"
+author: "Sunway Actuarial & Financial Excellence (SAFE)"
+date: "November 13, 2016"
+output: pdf_document
+---
+
+##*`r TeamName.c`*  
+##*End of Year `r yy+1` Report*
+  
+### 1 - CORE BUSINESS: Brief Report
+```{r echo=FALSE}
+knitr::kable(c1Report.df, row.names = F)
+```
+
+`r cComment.c`
+
+### 2 - Relevant Transactions
+```{r echo=FALSE, fig.width = 10}
+knitr::kable(r2Report.df[,1:6], row.names = F)
+knitr::kable(r2Report.df[,c(1, 7:12)], row.names = F)
+knitr::kable(r2Report.df[,c(1, 13:16)], row.names = F)
+```
+
+`r r2Comment0.c`  
+
+`r r2CommentT.c`
+
+### 3 - Failed Transactions
+```{r echo=FALSE, results='asis'}
+if(nrow(f2Report.df)>0){
+       return(knitr::kable(f2Report.df[,1:6], row.names = F))
+}  
+if(nrow(f2Report.df)>0){
+      return(knitr::kable(f2Report.df[,c(1, 7:12)], row.names = F))
+}
+if(nrow(f2Report.df)>0){
+      return(knitr::kable(f2Report.df[,c(1, 13:17)], row.names = F))
+}
+```
+
+`r f2Comment.c`
+
+### 4 - Statement of Financial Position  
+
+`r TeamName.c`  
+
+STATEMENT OF FINANCIAL POSITION  
+
+AS AT END OF YEAR `r yy+1`  
+
+
+|                      | AS AT END OF YR `r yy+1`  |  AS AT END OF YR `r yy` |
+|---------------------:|:--------------------------|-------------------------|
+|                      | (RM)                         | (RM)                  |
+| **ASSETS**           |                              |                       |
+| PPE                         | `r accelementy2.v[1]`  | `r accelementy.v[1]` | 
+| Financial Asset             | `r accelementy2.v[2]`  | `r accelementy.v[2]` |
+| Cash                        | `r accelementy2.v[3]`  | `r accelementy.v[3]` |
+| **Total Assets**            | `r accelementy2.v[4]`  | `r accelementy.v[4]` |
+|  |  |  | 
+| **EQUITY AND LIABILITIES** |  |  |
+| **Equity attributable to owners of the company**  |  |  | 
+| Share Capital               | `r accelementy2.v[5]`  | `r accelementy.v[5]` | 
+| Retained Earnings           | `r accelementy2.v[6]`  | `r accelementy.v[6]` |
+| **Total equity**            | `r accelementy2.v[7]`  | `r accelementy.v[7]` | 
+|  |  |  | 
+| **Liabilities** |  |        | 
+| Loan                        | `r accelementy2.v[8]`  | `r accelementy.v[8]` |
+| **Total liabilities**       | `r accelementy2.v[9]`  | `r accelementy.v[9]` | 
+|  |  |  | 
+| **Total equity and liabilities**                    | `r accelementy2.v[10]` | `r accelementy.v[10]` | 
+|  |  |  | 
+| *Net assets attributable to owners (NAV)*           | `r accelementy2.v[11]` | `r accelementy.v[11]` | 
+
+
+
+###5 - EVALUATION ~ Hedging
+```{r echo=FALSE, fig.width=7, fig.height=4}
+# plot_grid(ggplot.asset.list[[1]],ggplot.asset.list[[2]], ggplot.asset.list[[3]],ggplot.asset.list[[4]],
+#           ggplot.asset.list[[5]], align='h', ncol = 1)
+ggplot.asset.list[[1]]
+ggplot.asset.list[[2]]
+ggplot.asset.list[[3]]
+ggplot.asset.list[[4]]
+ggplot.asset.list[[5]]
+
+knitr::kable(hedgescore.team.df, row.names = F)
+
+
+```
+  
+`r hedge5Comment.c` 
+
+###6 - EVALUATION ~ Cash Flow  
+`r cash6Comment.c`
+
+###7 - EVALUATION ~ Extra Event
+`r extra7Comment.c` 
+   
+###8 - Total Score Breakdown - `r TeamName.c`  
+```{r echo=FALSE}
+knitr::kable(scorebr8.yy2.df, row.names = F)
+```
+   
+`r scoreComment8.c`
+ 

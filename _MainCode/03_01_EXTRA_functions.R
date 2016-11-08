@@ -11,17 +11,17 @@ check.tkey.f <- function(TeamName.c, tKey.c, tkey.df){
             }
 } 
       
-#yr2: max 4 transactions
-maxfour.f <- function(EXTRAraw.df, tkeydf){
+#yr2: max N=6 transactions
+maxfour.f <- function(EXTRAraw.df, tkeydf, maxntran = 6){
       N <- nrow(EXTRAraw.df)
       vl.v <- sapply(1:N, FUN = function(j){    check.tkey.f(EXTRAraw.df[j, "TeamName"], EXTRAraw.df[j, "tKey"], tkeydf)      })
       truedf <- EXTRAraw.df[vl.v %in% 1,]
             uniqueteam.v <- unique(truedf[,"TeamName"])
             rawtran.team.df.list <- lapply(uniqueteam.v, FUN = function(x){
                                     u <- truedf[,"TeamName"] %in% x
-                                    if(sum(truedf[u,"Units"]) > 12000){
+                                    if(sum(u) > maxntran){
                                           tdf <- truedf[u,]; N2 <- nrow(tdf)
-                                          tdf[(N2-3):N2,]
+                                          tdf[(N2-maxntran+1):N2,] #latest 6 transactions will be chosen
                                     }else{
                                           tdf <- truedf[u,]
                                           tdf
@@ -42,10 +42,10 @@ VLandVLR.EXTRA.v2.f <- function(TeamName.c, tKey.c, tkey.df){
       
 
 ########YR 0,1 - PV     #must be unique teamname? one only!
-conv1extra.f <- function(EXTRAraw.df, tkeydf){ #SPECTRAN ##filter out excess/invalid raw extra transactions.
+conv1extra.f <- function(EXTRAraw.df, tkeydf, emptydf){ #SPECTRAN ##filter out excess/invalid raw extra transactions.
 N <- nrow(EXTRAraw.df)
 if(N == 0){
-      EXTRAraw.df
+      emptydf
 }else{
       colnames(EXTRAraw.df) <- c("ExtraName", "tDate", "Service", "TeamName", "tKey", "Remarks")
       
@@ -68,9 +68,52 @@ if(N == 0){
 }
 }
 
+
+conv1extra.employ.f <- function(EXTRAraw.df, tkeydf, employserv.meta.df, emptydf){ #employ service pay transactions
+      N <- nrow(EXTRAraw.df)
+      if(N == 0){
+            emptydf
+      }else{
+            colnames(EXTRAraw.df) <- c("ExtraName", "tDate", "Service", "TeamName", "tKey", "Remarks")
+            
+            #Check Trading Key
+            vl.v <- sapply(1:N, FUN = function(j){    check.tkey.f(EXTRAraw.df[j, "TeamName"], EXTRAraw.df[j, "tKey"], tkeydf)      })
+            u1 <- vl.v %in% 1
+            
+            u2 <- !EXTRAraw.df[, "Service"] %in% c("None")
+                  
+            #Output: valid spectran1
+            edf1 <- EXTRAraw.df[u1 & u2,]
+            
+            #1 Contract per team
+            uniqueteam.v <- unique(EXTRAraw.df[, "TeamName"])
+            
+            edf2 <- lapply(uniqueteam.v, FUN = function(k){
+                  u <- edf1[, "TeamName"] %in% k
+                  edf1[u, ][sum(u),]
+            })
+            
+            edf3 <- do.call(rbind,edf2)
+            
+            #compare and get the employ service pay transaction
+            service.v <- edf3[,"Service"]
+            servtran.df.list <- lapply(service.v, FUN = function(serv){
+                  u <- employserv.meta.df[, "FIC"] %in% serv
+                  employserv.meta.df[u, 1:18]
+            })
+            servtran.df <- do.call(rbind, servtran.df.list)
+      N <- nrow(servtran.df)
+      servtran.df[, "TeamName"] <- edf3[, "TeamName"]
+      servtran.df[,"Remarks"] <- servtran.df[,"tKey"] <- rep(NA,N) ; servtran.df[,"VL"] <- servtran.df[,"VLRemarks"] <- rep(1, N)   #add remaining columns
+      servtran.df[,"cff"] <- sapply(X = 1:N, FUN = function(j){ cff.f(cType.c = servtran.df[j,"cType"], pos1.c = servtran.df[j,"pos1"])   }) #add cff
+            servtran.df
+      }
+}
+
+
 ########YR 2 - arbitrage 
       
-conv2extra.f <- function(EXTRAraw.df, ficmeta.df, tkeydf){ #required function: #returnmetaval.f(fic, ficmeta.df, vname)
+conv2extra.f <- function(EXTRAraw.df, employserv.meta.df, tkeydf){ #required function: #returnmetaval.f(fic, ficmeta.df, vname)
 if(nrow(EXTRAraw.df) == 0){
       EXTRAraw.df
 }else{
@@ -80,7 +123,7 @@ if(nrow(EXTRAraw.df) == 0){
       
       #subset only latest 4 transactions per team
       colnames(EXTRAraw.df) <- c("FIC", "TeamName", "pos1", "Units", "tKey", "Remarks")
-            edf <- maxfour.f(EXTRAraw.df, tkeydf)
+            edf <- maxfour.f(EXTRAraw.df, tkeydf, 6)
                   N <- nrow(edf)
             
       
@@ -230,7 +273,7 @@ validrawdf.f <- function(EXTRAraw.df, tkeydf){
             uniqueteam.v <- edf0[,"TeamName"]
             edf1 <- lapply(uniqueteam.v, FUN = function(x){
                   u <- edf0[,"TeamName"] %in% x
-                  edf0[u,][sum(u),]          
+                  edf0[u,][sum(u),]         #get latest entry 
             })
             edf2 <- do.call(rbind,edf1)
             edf2

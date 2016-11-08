@@ -118,8 +118,8 @@ f0df.csv.files <- subfiles.td.f(f0df.csv.files, yy) #subset 0:yy  #subset up to 
 {
       setwd(maincode.dir)
       source("80_END1.R")
-      end3.td.df[,"TrackNo"] <- trackno.f(end3.td.df)
       end3.td.df[,"classf"] <- toupper(end3.td.df[,"classf"])
+      end3.td.df[,"TrackNo"] <- trackno.f(end3.td.df)
             #BACKUP:
             setwd(fulltran.dir); write.csv(end3.td.df, paste0("b_end3_td_", yy, ".csv"), row.names = F)
 } 

@@ -38,6 +38,8 @@ source("03_01_EXTRA_functions.R")
       
 #META-FIC
       ficmeta.df <- importmeta.f(meta.dir, "meta-FIC.xlsx")
+#meta-employservice
+      employserv.meta.df <- importmeta.f(meta.dir, "meta-employservice.xlsx")
       
 {
       #Create empty extrafulltran.df
@@ -71,8 +73,8 @@ if(yy %in% c(0,1)){
 ##CONVERT EXTRAraw.df to spectran.df/extrafulltran.df
 if(yy %in% c(0,1)){ 
       #belongs to yr 00, 01, -- PV, PV,  Extra Events ->> special treatment > SPEC DF
-      spectran.df <- conv1extra.f(EXTRAraw.df, tkeydf)
-      
+      spectran.df <- conv1extra.f(EXTRAraw.df, tkeydf, emptydf = spectran.df)
+      extrafulltran.df <- conv1extra.employ.f(EXTRAraw.df, tkeydf, employserv.meta.df, emptydf = extrafulltran.df)
 }else if(yy %in% c(2)){
       #yr2 - arbitrage - FIC for options
       extrafulltran.df <- conv2extra.f(EXTRAraw.df, ficmeta.df, tkeydf)

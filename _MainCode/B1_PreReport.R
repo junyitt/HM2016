@@ -178,7 +178,7 @@ hedgescore.team.df.list <- lapply(teamname12, FUN = function(TeamName.c){
                               })
 hedge5Comment.v <- sapply(hedgescore.team.df.list, FUN = function(df){
                               ss <- sum(df[, ncol(df)])
-                              paste0("Score for Hedging is ", ss)
+                              paste0("Raw Hedging Score is ", ss, ". Converting to 20 points, the Hedging Score is ", round(ss/9*20,2), " points. *It is possible that the Hedging Score exceed 20 points. Anyhow, your score will be compared relatively to other teams.") 
 }) 
 
 } ##ggplot.team.asset.list, hedgescore.team.df.list, hedge5Comment.v
@@ -196,11 +196,11 @@ hedge5Comment.v <- sapply(hedgescore.team.df.list, FUN = function(df){
             cash0.v <- balsh_y.df[,"Cash"] + excludeloan.cash0.v; cash0.v <- formatC(cash0.v, digits = 2, big.mark = ",", format="f") 
             cash6Comment.v <- vector()
       u <- cash0.v > 0
-      cash6Comment.v[u] <- paste0("Cash balance right after trading is MYR ", cash0.v[u], ". Score for Cash Flow is 10.")
+      cash6Comment.v[u] <- paste0("Cash balance right after trading is MYR ", cash0.v[u], ". Score for Cash Flow is 10 points.")
       cash6Comment.v[!u] <- paste0("Cash balance right after trading is MYR ", cash0.v[!u], 
                                    ". Additional loan amounting to MYR ", stloan.v[!u], 
                                     " was borrowed from 3rd Party Institution. ", 
-                                   "Score for Cash Flow is 0.")
+                                   "Score for Cash Flow is 0 point.")
 } ##cash6Comment.v
 
 ######################## 
@@ -215,15 +215,15 @@ hedge5Comment.v <- sapply(hedgescore.team.df.list, FUN = function(df){
                   if(length(serv) == 0){
                         serv <- "No service"
                   }
-                  paste0(serv, " was chosen. The score for Extra Event is ", score.extra[j])
+                  paste0(serv, " was chosen. The score for Extra Event is ", score.extra[j], " points.")
             }else if(yy %in% c(2,3)){
                   "Not applicable, NA."
             }else if(yy %in% c(4)){
                   u <- end3.td.df[,"cParty"] %in% "Harry M."; u2 <- end3.td.df[, "TeamName"]  %in% TeamName.c
                         sharpe.entry.c <- end3.td.df[u & u2,"kPrice"]
-                        if(length(sharpe.entry.c) == 0){sharpe.entry.c <- "NA"}
+                        if(length(sharpe.entry.c) == 0){sharpe.entry.c <- NA}
                   paste0("Maximum Sharpe ratio is ", round(maxsharpe.c,5), ". Your Sharpe ratio is ", round(sharpe.entry.c,5),
-                         ". The score for Extra Event is ", score.extra[j])
+                         ". The score for Extra Event is ", score.extra[j], " points.")
             }else{
                   "Not applicable, NA. Error."
             }
@@ -251,10 +251,10 @@ hedge5Comment.v <- sapply(hedgescore.team.df.list, FUN = function(df){
       scoreComment8.v <- sapply(scorebr8.yy2.df.list, FUN = function(df){
                         if(yy == 4){
                               ss <- sum(df[nrow(df), 2:5])
-                              paste0("Your final score is ", ss)
+                              paste0("Your Final Score for Round 1 of HedgeMaster Challenge is ", ss, " points. Converting to 60%, your Final Score is ", round(ss/50*60,2), "%. All the best for Round 2 of HedgeMaster CHallenge!.")
                         }else{
                               ss <- sum(df[nrow(df), 2:4])
-                              paste0("Your current score (average) is ", ss)
+                              paste0("Your current score (average) is ", ss, " points.")
                         }
                   })
 } #scorebr8.yy2.df.list; scoreComment8.v

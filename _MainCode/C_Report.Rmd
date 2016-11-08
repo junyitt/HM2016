@@ -17,9 +17,9 @@ knitr::kable(c1Report.df, row.names = F)
 
 ### 2 - Relevant Transactions
 ```{r echo=FALSE, fig.width = 10}
-knitr::kable(r2Report.df[,1:6], row.names = F)
-knitr::kable(r2Report.df[,c(1, 7:12)], row.names = F)
-knitr::kable(r2Report.df[,c(1, 13:16)], row.names = F)
+knitr::kable(r2Report.df[order(r2Report.df[,"TransactionClass"]),1:6], row.names = F)
+knitr::kable(r2Report.df[order(r2Report.df[,"TransactionClass"]),c(1, 7:12)], row.names = F)
+knitr::kable(r2Report.df[order(r2Report.df[,"TransactionClass"]),c(1, 13:16)], row.names = F)
 ```
 
 `r r2Comment0.c`  
@@ -87,10 +87,15 @@ ggplot.asset.list[[5]]
 
 knitr::kable(hedgescore.team.df, row.names = F)
 
+adddetails.link <- "https://1drv.ms/b/s!AuUxik9_I7qcuXNorj9XuGMHCFHV"
 
 ```
   
-`r hedge5Comment.c` 
+`r hedge5Comment.c`   
+  
+Additional details on Hedging Score and Payoff Graph can be found here:   
+click: **<`r adddetails.link`>**
+
 
 ###6 - EVALUATION ~ Cash Flow  
 `r cash6Comment.c`

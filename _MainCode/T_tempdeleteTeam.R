@@ -15,7 +15,18 @@ for(t in teamname.v){
             unlink(todelete)
       }
 }
-      
+
+todelete <- dir(fulltran.dir, full.names = TRUE)
+unlink(todelete)
+
+todelete <- dir(finalreport.dir, full.names = TRUE)
+unlink(todelete)
+
+todelete <- dir(distreport.dir, full.names = TRUE)
+unlink(todelete)
+
+
+
 # 
 # origindir <- c("c:/origindir")
 # targetdir <- c("c/targetdir")
