@@ -1,0 +1,49 @@
+---
+title: "Final Score (Round 1)"
+author: "HedgeMaster Challenge 2016"
+date: "November 13, 2016"
+output: pdf_document
+---
+
+
+```{r pressure, echo=FALSE, include = F}
+# suppressMessages({
+# MAINCODEDIR <- "C:/Users/User/Google Drive/z_ALLHM/_MainCode"; setwd(MAINCODEDIR)
+# source("_HM_alldirectory.R"); source("_HM_allfunction.R")
+# })
+```
+
+```{r, echo = F}
+# setwd(fulltran.dir)
+# scorebr.df <- read.csv("aa-scorebreakdown-td-5.csv", stringsAsFactors = F)
+# 
+# teamname.v <- teamname.f()
+# 
+# score1.list <- lapply(teamname.v, FUN = function(teamname.c){
+#       u2 <- !(scorebr.df[, "Year"] %in% 0)
+#       u1 <- scorebr.df[, "TeamName"] %in% teamname.c 
+#       df1 <- scorebr.df[u1 & u2,c(1,6,2,3,4,5)]
+#       
+#       
+#       h0 <- round(mean(df1[,"Hedging"], na.rm = T),3)
+#       c0 <- round(mean(df1[,"CashFlow"], na.rm = T),3)
+#       e0 <- round(mean(df1[,"ExtraEvent"], na.rm = T),3)
+#       n0 <- round(mean(df1[,"NAV"], na.rm = T),3)
+#       df1[6, "TeamName"] <- "Average"
+#       df1[6, "Year"] <- NA
+#       df1[6, "Hedging"] <- h0
+#       df1[6, "CashFlow"] <- c0
+#       df1[6, "ExtraEvent"] <- e0
+#       df1[6, "NAV"] <- n0
+#       
+#             ss <- h0 + c0 + e0 + n0; ssp <- round(ss/50*60,3)
+#       msg0 <- paste0("Final Score is ", ss, " points.", "Convert to 60%, the Final Score is ", ssp, "%.")
+#       df1 <- data.frame(df1, row.names = NULL) 
+#       
+#       list(df1, msg0)
+# })
+
+score1.list
+```
+
+

@@ -1,6 +1,24 @@
 #_HM_allfunction.R
 
-source("C:/Users/User/Google Drive/r_Rfunction/_myCode.R")
+library0 <- function(y){
+      g <- sapply(X = y, FUN = function(x){
+            tryCatch(
+                  expr = {library(x, character.only = T)},
+                  warning = function(w){},
+                  error = function(e){install.packages(x, dependencies = T); library(x, character.only = T)},
+                  finally = {}
+            )
+            
+      })
+      rm(g)
+      print("Packages loaded!")
+      rbind(y)
+}
+
+packages <- c("rmarkdown", "xlsx", "gridExtra", "knitr", "reshape2", "readxl", "dplyr", "lubridate", "ggplot2", "TTR", "devtools", "pander", "knitr", "xtable")
+library0(packages)
+
+
 library(reshape2); library(knitr) #install.packages(rmarkdown);
 library(ggplot2); library(gridExtra); require(cowplot)
 library(xlsx)
